@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -12,8 +13,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { getAllOrders } from '../storage/database';
-import { Order, OrderItem, Platform } from '../types';
+import { getAllOrders, recalculateAllCogs } from '../storage/database';
+import { Order, Platform } from '../types';
 import { COLORS, SPACING } from '../theme';
 
 const PLATFORM_COLOR: Record<Platform, string> = {
@@ -48,6 +49,7 @@ export default function OrdersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
+  const [recalculating, setRecalculating] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -62,6 +64,29 @@ export default function OrdersScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
+
+  const handleRecalculate = async () => {
+    Alert.alert(
+      'Hitung Ulang COGS',
+      'Semua order akan di-update COGS-nya berdasarkan data produk/varian yang sekarang. Lanjutkan?',
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Ya, Hitung Ulang',
+          onPress: async () => {
+            setRecalculating(true);
+            try {
+              const count = await recalculateAllCogs();
+              await loadData();
+              Alert.alert('Selesai', `COGS berhasil dihitung ulang untuk ${count} order.`);
+            } finally {
+              setRecalculating(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedOrderIds((prev) => {
@@ -104,8 +129,18 @@ export default function OrdersScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Detail Orderan</Text>
-        <Text style={styles.headerSubtitle}>Verifikasi produk, varian, dan COGS tiap item</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>Detail Orderan</Text>
+          <Text style={styles.headerSubtitle}>Verifikasi produk, varian, dan COGS tiap item</Text>
+        </View>
+        <TouchableOpacity style={styles.recalcBtn} onPress={handleRecalculate} disabled={recalculating}>
+          {recalculating
+            ? <ActivityIndicator size="small" color={COLORS.white} />
+            : <Ionicons name="refresh-outline" size={18} color={COLORS.white} />}
+          <Text style={styles.recalcBtnText}>
+            {recalculating ? 'Menghitung...' : 'Hitung Ulang COGS'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Summary bar */}
@@ -296,9 +331,16 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     backgroundColor: COLORS.primary, padding: SPACING.md,
+    flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
   },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: COLORS.white },
-  headerSubtitle: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: COLORS.white },
+  headerSubtitle: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
+  recalcBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 8,
+  },
+  recalcBtnText: { fontSize: 11, fontWeight: '700', color: COLORS.white },
 
   summaryScroll: { maxHeight: 80 },
   summaryRow: { gap: SPACING.sm, padding: SPACING.md, paddingVertical: SPACING.sm },

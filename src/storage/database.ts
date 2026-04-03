@@ -185,3 +185,46 @@ export async function deleteImportSession(id: string): Promise<void> {
 export async function clearAllData(): Promise<void> {
   await AsyncStorage.multiRemove([KEYS.ORDERS, KEYS.IMPORT_SESSIONS]);
 }
+
+// ── Recalculate COGS ──────────────────────────────────────────────────────────
+
+/**
+ * Re-calculate COGS for ALL existing orders based on the current product/variant database.
+ * Call this after adding or updating products/variants.
+ * Returns the number of orders updated.
+ */
+export async function recalculateAllCogs(): Promise<number> {
+  const [orders, products] = await Promise.all([getAllOrders(), getAllProducts()]);
+  if (orders.length === 0 || products.length === 0) return 0;
+
+  const updated = orders.map((order) => {
+    const newItems = order.items.map((item) => {
+      const nameNorm = item.productName.toLowerCase().trim();
+      const product = products.find((p) => {
+        const pNorm = p.name.toLowerCase().trim();
+        return nameNorm.includes(pNorm) || pNorm.includes(nameNorm);
+      });
+
+      if (!product) return item;
+
+      const cogsPerUnit = findCogsByVariant(product, item.variantName || '');
+      return {
+        ...item,
+        productId: product.id,
+        cogs: cogsPerUnit,
+        totalCogs: cogsPerUnit * item.quantity,
+      };
+    });
+
+    const totalCogs = newItems.reduce((s, i) => s + i.totalCogs, 0);
+    return {
+      ...order,
+      items: newItems,
+      totalCogs,
+      netIncome: order.netAmount - totalCogs,
+    };
+  });
+
+  await saveOrders(updated);
+  return updated.length;
+}
