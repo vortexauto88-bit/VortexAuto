@@ -22,6 +22,7 @@ import Papa from 'papaparse';
 
 import { deleteProduct, getAllOrders, getAllProducts, saveProduct } from '../storage/database';
 import { generateId } from '../utils/helpers';
+import { DEFAULT_HPP_DATA } from '../utils/defaultHpp';
 import { Product, ProductVariant } from '../types';
 import { COLORS, SPACING } from '../theme';
 
@@ -302,6 +303,67 @@ export default function COGSScreen() {
     }
   };
 
+  const handleLoadDefault = () => {
+    Alert.alert(
+      'Muat Data HPP Bawaan',
+      `Akan memuat ${DEFAULT_HPP_DATA.length} baris HPP (36 produk). Data yang sudah ada tidak akan dihapus, hanya ditambah/diperbarui. Lanjutkan?`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Muat Sekarang',
+          onPress: async () => {
+            setSaving(true);
+            try {
+              const existing = await getAllProducts();
+              const existingByName = new Map(existing.map((p) => [p.name.toLowerCase(), p]));
+              const now = new Date().toISOString();
+
+              // Group default data by product name
+              const productMap = new Map<string, { variants: { label: string; cogs: number }[] }>();
+              for (const row of DEFAULT_HPP_DATA) {
+                if (!productMap.has(row.productName)) productMap.set(row.productName, { variants: [] });
+                if (row.variantLabel) {
+                  productMap.get(row.productName)!.variants.push({ label: row.variantLabel, cogs: row.cogs });
+                }
+              }
+
+              for (const [name, { variants }] of productMap) {
+                const ex = existingByName.get(name.toLowerCase());
+                const fallbackCogs = DEFAULT_HPP_DATA.find(
+                  (r) => r.productName === name && !r.variantLabel
+                )?.cogs || 0;
+                const newVariants: ProductVariant[] = variants.map((v) => ({
+                  id: generateId(), label: v.label, cogs: v.cogs,
+                }));
+
+                if (ex) {
+                  const existingLabels = new Set(ex.variants.map((v) => v.label.toLowerCase()));
+                  const toAdd = newVariants.filter((v) => !existingLabels.has(v.label.toLowerCase()));
+                  await saveProduct({
+                    ...ex,
+                    cogs: ex.cogs || fallbackCogs,
+                    variants: [...ex.variants, ...toAdd],
+                    updatedAt: now,
+                  });
+                } else {
+                  await saveProduct({
+                    id: generateId(), name, sku: '', cogs: fallbackCogs,
+                    variants: newVariants, createdAt: now, updatedAt: now,
+                  });
+                }
+              }
+
+              await loadData();
+              Alert.alert('Berhasil', 'Data HPP bawaan berhasil dimuat. Silakan cek tab Orderan dan tekan "Hitung Ulang COGS".');
+            } finally {
+              setSaving(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleExportTemplate = async () => {
     const csv = [
       'Nama Produk,Nama Variasi,COGS,SKU',
@@ -384,6 +446,14 @@ export default function COGSScreen() {
           <Text style={styles.importBtnText}>Import</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Load default HPP button */}
+      <TouchableOpacity style={styles.defaultHppBtn} onPress={handleLoadDefault} disabled={saving}>
+        {saving
+          ? <ActivityIndicator size="small" color={COLORS.white} />
+          : <Ionicons name="cloud-download-outline" size={15} color={COLORS.white} />}
+        <Text style={styles.defaultHppBtnText}>Muat Data HPP Bawaan (36 produk)</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.templateHint} onPress={handleExportTemplate}>
         <Ionicons name="download-outline" size={14} color={COLORS.info} />
@@ -670,6 +740,13 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.info + '40',
   },
   importBtnText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
+  defaultHppBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: COLORS.primary, marginHorizontal: SPACING.md,
+    marginTop: SPACING.sm, borderRadius: 10, paddingVertical: 10,
+    paddingHorizontal: SPACING.md, justifyContent: 'center',
+  },
+  defaultHppBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.white },
   templateHint: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     marginHorizontal: SPACING.md, marginTop: SPACING.xs,
