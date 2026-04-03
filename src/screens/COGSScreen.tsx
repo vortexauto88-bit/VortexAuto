@@ -22,7 +22,7 @@ import Papa from 'papaparse';
 
 import { deleteProduct, getAllOrders, getAllProducts, saveProduct } from '../storage/database';
 import { generateId } from '../utils/helpers';
-import { Product } from '../types';
+import { Product, ProductVariant } from '../types';
 import { COLORS, SPACING } from '../theme';
 
 interface ProductWithStats extends Product {
@@ -43,6 +43,14 @@ export default function COGSScreen() {
   const [formSku, setFormSku] = useState('');
   const [formCogs, setFormCogs] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Variant modal state
+  const [variantModalVisible, setVariantModalVisible] = useState(false);
+  const [variantProduct, setVariantProduct] = useState<Product | null>(null);
+  const [editVariant, setEditVariant] = useState<ProductVariant | null>(null);
+  const [variantName, setVariantName] = useState('');
+  const [variantCogs, setVariantCogs] = useState('');
+  const [savingVariant, setSavingVariant] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -125,6 +133,58 @@ export default function COGSScreen() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const openVariantModal = (product: Product, variant?: ProductVariant) => {
+    setVariantProduct(product);
+    setEditVariant(variant || null);
+    setVariantName(variant?.name || '');
+    setVariantCogs(variant?.cogs.toString() || '');
+    setVariantModalVisible(true);
+  };
+
+  const handleSaveVariant = async () => {
+    if (!variantName.trim()) {
+      Alert.alert('Error', 'Nama variasi tidak boleh kosong.');
+      return;
+    }
+    const cogs = parseFloat(variantCogs.replace(/[^0-9.]/g, ''));
+    if (isNaN(cogs) || cogs < 0) {
+      Alert.alert('Error', 'HPP harus berupa angka yang valid.');
+      return;
+    }
+    if (!variantProduct) return;
+
+    setSavingVariant(true);
+    try {
+      const variants: ProductVariant[] = [...(variantProduct.variants || [])];
+      if (editVariant) {
+        const idx = variants.findIndex((v) => v.id === editVariant.id);
+        if (idx >= 0) variants[idx] = { ...editVariant, name: variantName.trim(), cogs };
+      } else {
+        variants.push({ id: generateId(), name: variantName.trim(), cogs });
+      }
+      await saveProduct({ ...variantProduct, variants, updatedAt: new Date().toISOString() });
+      setVariantModalVisible(false);
+      await loadData();
+    } finally {
+      setSavingVariant(false);
+    }
+  };
+
+  const handleDeleteVariant = (product: Product, variant: ProductVariant) => {
+    Alert.alert('Hapus Variasi', `Hapus variasi "${variant.name}"?`, [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Hapus',
+        style: 'destructive',
+        onPress: async () => {
+          const variants = (product.variants || []).filter((v) => v.id !== variant.id);
+          await saveProduct({ ...product, variants, updatedAt: new Date().toISOString() });
+          await loadData();
+        },
+      },
+    ]);
   };
 
   const handleDelete = (product: Product) => {
@@ -272,11 +332,12 @@ export default function COGSScreen() {
             <View style={styles.productMain}>
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{item.name}</Text>
-                {item.sku ? (
-                  <Text style={styles.productSku}>SKU: {item.sku}</Text>
-                ) : null}
+                {item.sku ? <Text style={styles.productSku}>SKU: {item.sku}</Text> : null}
               </View>
               <View style={styles.productActions}>
+                <TouchableOpacity onPress={() => openVariantModal(item)} style={styles.editBtn}>
+                  <Ionicons name="add-circle-outline" size={18} color={COLORS.success} />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => openEditModal(item)} style={styles.editBtn}>
                   <Ionicons name="pencil-outline" size={16} color={COLORS.primary} />
                 </TouchableOpacity>
@@ -285,27 +346,102 @@ export default function COGSScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-            <View style={styles.productStats}>
-              <View style={styles.productStat}>
-                <Text style={styles.productStatLabel}>COGS/unit</Text>
-                <Text style={[styles.productStatValue, { color: COLORS.error }]}>
-                  Rp {Math.round(item.cogs).toLocaleString('id-ID')}
-                </Text>
+
+            {/* Variants */}
+            {item.variants && item.variants.length > 0 ? (
+              <View style={styles.variantsSection}>
+                <Text style={styles.variantsLabel}>Variasi:</Text>
+                {item.variants.map((variant) => (
+                  <View key={variant.id} style={styles.variantRow}>
+                    <Text style={styles.variantName}>{variant.name}</Text>
+                    <Text style={styles.variantCogs}>
+                      Rp {Math.round(variant.cogs).toLocaleString('id-ID')}
+                    </Text>
+                    <TouchableOpacity onPress={() => openVariantModal(item, variant)} style={styles.variantEditBtn}>
+                      <Ionicons name="pencil-outline" size={13} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteVariant(item, variant)} style={styles.variantEditBtn}>
+                      <Ionicons name="trash-outline" size={13} color={COLORS.error} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
-              <View style={styles.productStat}>
-                <Text style={styles.productStatLabel}>Terjual</Text>
-                <Text style={styles.productStatValue}>{item.totalUnitsSold} unit</Text>
+            ) : (
+              <View style={styles.productStats}>
+                <View style={styles.productStat}>
+                  <Text style={styles.productStatLabel}>HPP/unit</Text>
+                  <Text style={[styles.productStatValue, { color: COLORS.error }]}>
+                    Rp {Math.round(item.cogs).toLocaleString('id-ID')}
+                  </Text>
+                </View>
+                <View style={styles.productStat}>
+                  <Text style={styles.productStatLabel}>Terjual</Text>
+                  <Text style={styles.productStatValue}>{item.totalUnitsSold} unit</Text>
+                </View>
+                <View style={styles.productStat}>
+                  <Text style={styles.productStatLabel}>Total COGS</Text>
+                  <Text style={[styles.productStatValue, { color: COLORS.error }]}>
+                    Rp {Math.round(item.totalCogsCost).toLocaleString('id-ID')}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.productStat}>
-                <Text style={styles.productStatLabel}>Total COGS</Text>
-                <Text style={[styles.productStatValue, { color: COLORS.error }]}>
-                  Rp {Math.round(item.totalCogsCost).toLocaleString('id-ID')}
-                </Text>
-              </View>
-            </View>
+            )}
           </View>
         )}
       />
+
+      {/* Variant Modal */}
+      <Modal visible={variantModalVisible} animationType="slide" transparent>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>
+              {editVariant ? 'Edit Variasi' : 'Tambah Variasi'}
+            </Text>
+            {variantProduct && (
+              <Text style={styles.inputHint}>Produk: {variantProduct.name}</Text>
+            )}
+
+            <Text style={styles.inputLabel}>Nama Variasi *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Contoh: 1 Botol, 3 Botol, 5 Botol"
+              value={variantName}
+              onChangeText={setVariantName}
+              placeholderTextColor={COLORS.textTertiary}
+            />
+
+            <Text style={styles.inputLabel}>HPP Variasi Ini (Rp) *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Contoh: 28000"
+              value={variantCogs}
+              onChangeText={setVariantCogs}
+              keyboardType="numeric"
+              placeholderTextColor={COLORS.textTertiary}
+            />
+            <Text style={styles.inputHint}>
+              Nama variasi harus sama persis seperti yang tampil di CSV Shopee.
+            </Text>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setVariantModalVisible(false)}>
+                <Text style={styles.cancelBtnText}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveVariant} disabled={savingVariant}>
+                {savingVariant ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.saveBtnText}>Simpan</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* Add/Edit Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -473,6 +609,22 @@ const styles = StyleSheet.create({
   productStat: {},
   productStatLabel: { fontSize: 11, color: COLORS.textTertiary },
   productStatValue: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary, marginTop: 1 },
+  variantsSection: {
+    marginTop: SPACING.sm,
+    paddingTop: SPACING.sm,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderLight,
+  },
+  variantsLabel: { fontSize: 11, color: COLORS.textTertiary, marginBottom: 4 },
+  variantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    gap: 6,
+  },
+  variantName: { flex: 1, fontSize: 13, color: COLORS.textPrimary, fontWeight: '600' },
+  variantCogs: { fontSize: 13, color: COLORS.error, fontWeight: '700' },
+  variantEditBtn: { padding: 4 },
   emptyState: { alignItems: 'center', paddingVertical: 60, paddingHorizontal: SPACING.xl },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textSecondary, marginTop: SPACING.md },
   emptySubtitle: {

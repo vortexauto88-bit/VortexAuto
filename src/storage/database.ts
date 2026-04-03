@@ -97,11 +97,30 @@ export async function deleteProduct(id: string): Promise<void> {
 
 export async function getProductByName(name: string): Promise<Product | undefined> {
   const products = await getAllProducts();
-  return products.find(
+  const normalized = name.toLowerCase().trim();
+
+  // 1. Exact match on product name or SKU
+  const exact = products.find(
     (p) =>
-      p.name.toLowerCase().trim() === name.toLowerCase().trim() ||
-      p.sku.toLowerCase().trim() === name.toLowerCase().trim()
+      p.name.toLowerCase().trim() === normalized ||
+      (p.sku && p.sku.toLowerCase().trim() === normalized)
   );
+  if (exact) return exact;
+
+  // 2. Match product name + variant name (e.g. "Minyak Bulus - 3 Botol")
+  for (const product of products) {
+    if (!product.variants?.length) continue;
+    const productNorm = product.name.toLowerCase().trim();
+    if (!normalized.includes(productNorm)) continue;
+    for (const variant of product.variants) {
+      if (normalized.includes(variant.name.toLowerCase().trim())) {
+        return { ...product, cogs: variant.cogs };
+      }
+    }
+  }
+
+  // 3. Partial match — product name contained in order name
+  return products.find((p) => normalized.includes(p.name.toLowerCase().trim()));
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────

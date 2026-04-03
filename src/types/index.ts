@@ -30,11 +30,18 @@ export interface Order {
   importedAt: string;        // When was this record imported
 }
 
+export interface ProductVariant {
+  id: string;
+  name: string; // e.g. "1 Botol", "3 Botol", "5 Botol"
+  cogs: number;
+}
+
 export interface Product {
   id: string;
   name: string;
   sku: string;
-  cogs: number; // Cost of Goods Sold
+  cogs: number; // Default COGS (used when no variant matches)
+  variants?: ProductVariant[];
   createdAt: string;
   updatedAt: string;
 }
