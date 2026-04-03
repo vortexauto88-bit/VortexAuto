@@ -2,6 +2,7 @@
   "expo": {
     "name": "VortexAuto",
     "slug": "vortexauto",
+    "owner": "vortexauto88",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
