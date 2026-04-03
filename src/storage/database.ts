@@ -19,8 +19,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   adminFees: {
     shopeeAdminFeeRate: 2.5,
     shopeePaymentFeeRate: 2.0,
+    shopeeFixedFeePerOrder: 1250,
     tiktokAdminFeeRate: 5.0,
     tiktokPaymentFeeRate: 2.0,
+    tiktokFixedFeePerOrder: 1250,
   },
   currency: 'IDR',
   currencySymbol: 'Rp',
@@ -194,19 +196,20 @@ export async function clearAllData(): Promise<void> {
  * Returns the number of orders updated.
  */
 export async function recalculateAllCogs(): Promise<number> {
-  const [orders, products] = await Promise.all([getAllOrders(), getAllProducts()]);
-  if (orders.length === 0 || products.length === 0) return 0;
+  const [orders, products, settings] = await Promise.all([
+    getAllOrders(), getAllProducts(), getSettings(),
+  ]);
+  if (orders.length === 0) return 0;
 
   const updated = orders.map((order) => {
+    // Recalculate item COGS
     const newItems = order.items.map((item) => {
       const nameNorm = item.productName.toLowerCase().trim();
       const product = products.find((p) => {
         const pNorm = p.name.toLowerCase().trim();
         return nameNorm.includes(pNorm) || pNorm.includes(nameNorm);
       });
-
       if (!product) return item;
-
       const cogsPerUnit = findCogsByVariant(product, item.variantName || '');
       return {
         ...item,
@@ -217,11 +220,29 @@ export async function recalculateAllCogs(): Promise<number> {
     });
 
     const totalCogs = newItems.reduce((s, i) => s + i.totalCogs, 0);
+
+    // Add fixed fee per order if not already in adminFeeAmount
+    const fixedFee = order.platform === 'shopee'
+      ? (settings.adminFees.shopeeFixedFeePerOrder || 0)
+      : order.platform === 'tiktok'
+        ? (settings.adminFees.tiktokFixedFeePerOrder || 0)
+        : 0;
+
+    // Re-add fixed fee only if it's not yet included (adminFeeAmount doesn't already account for it)
+    // We detect this by checking if the stored fixedFee field exists
+    const adminFeeAmount = (order as any)._fixedFeeAdded
+      ? order.adminFeeAmount
+      : order.adminFeeAmount + fixedFee;
+    const netAmount = order.grossAmount - adminFeeAmount;
+
     return {
       ...order,
+      _fixedFeeAdded: true,
       items: newItems,
       totalCogs,
-      netIncome: order.netAmount - totalCogs,
+      adminFeeAmount,
+      netAmount,
+      netIncome: netAmount - totalCogs,
     };
   });
 

@@ -24,16 +24,20 @@ export default function SettingsScreen() {
   // Admin fee form
   const [shopeeAdmin, setShopeeAdmin] = useState('');
   const [shopeePayment, setShopeePayment] = useState('');
+  const [shopeeFixed, setShopeeFixed] = useState('');
   const [tiktokAdmin, setTiktokAdmin] = useState('');
   const [tiktokPayment, setTiktokPayment] = useState('');
+  const [tiktokFixed, setTiktokFixed] = useState('');
 
   const loadSettings = useCallback(async () => {
     const s = await getSettings();
     setSettings(s);
     setShopeeAdmin(s.adminFees.shopeeAdminFeeRate.toString());
     setShopeePayment(s.adminFees.shopeePaymentFeeRate.toString());
+    setShopeeFixed((s.adminFees.shopeeFixedFeePerOrder ?? 1250).toString());
     setTiktokAdmin(s.adminFees.tiktokAdminFeeRate.toString());
     setTiktokPayment(s.adminFees.tiktokPaymentFeeRate.toString());
+    setTiktokFixed((s.adminFees.tiktokFixedFeePerOrder ?? 1250).toString());
   }, []);
 
   useFocusEffect(useCallback(() => { loadSettings(); }, [loadSettings]));
@@ -49,8 +53,10 @@ export default function SettingsScreen() {
         adminFees: {
           shopeeAdminFeeRate: parse(shopeeAdmin),
           shopeePaymentFeeRate: parse(shopeePayment),
+          shopeeFixedFeePerOrder: parse(shopeeFixed),
           tiktokAdminFeeRate: parse(tiktokAdmin),
           tiktokPaymentFeeRate: parse(tiktokPayment),
+          tiktokFixedFeePerOrder: parse(tiktokFixed),
         },
       };
       await saveSettings(updated);
@@ -88,16 +94,8 @@ export default function SettingsScreen() {
   }
 
   const FeeRow = ({
-    label,
-    value,
-    onChange,
-    description,
-  }: {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    description?: string;
-  }) => (
+    label, value, onChange, description,
+  }: { label: string; value: string; onChange: (v: string) => void; description?: string }) => (
     <View style={styles.feeRow}>
       <View style={styles.feeInfo}>
         <Text style={styles.feeLabel}>{label}</Text>
@@ -113,6 +111,28 @@ export default function SettingsScreen() {
           placeholderTextColor={COLORS.textTertiary}
         />
         <Text style={styles.feePercent}>%</Text>
+      </View>
+    </View>
+  );
+
+  const FixedFeeRow = ({
+    label, value, onChange, description,
+  }: { label: string; value: string; onChange: (v: string) => void; description?: string }) => (
+    <View style={styles.feeRow}>
+      <View style={styles.feeInfo}>
+        <Text style={styles.feeLabel}>{label}</Text>
+        {description && <Text style={styles.feeDesc}>{description}</Text>}
+      </View>
+      <View style={styles.feeInputContainer}>
+        <Text style={styles.feePercent}>Rp</Text>
+        <TextInput
+          style={[styles.feeInput, { width: 80 }]}
+          value={value}
+          onChangeText={onChange}
+          keyboardType="numeric"
+          maxLength={8}
+          placeholderTextColor={COLORS.textTertiary}
+        />
       </View>
     </View>
   );
@@ -147,10 +167,16 @@ export default function SettingsScreen() {
           onChange={setShopeePayment}
           description="Umumnya 2% dari total transaksi"
         />
+        <FixedFeeRow
+          label="Biaya Tetap per Pesanan"
+          value={shopeeFixed}
+          onChange={setShopeeFixed}
+          description="Biaya flat per order, default Rp 1.250"
+        />
         <View style={styles.totalFeeRow}>
           <Text style={styles.totalFeeLabel}>Total biaya estimasi per transaksi:</Text>
           <Text style={styles.totalFeeValue}>
-            {(parseFloat(shopeeAdmin || '0') + parseFloat(shopeePayment || '0')).toFixed(1)}%
+            {(parseFloat(shopeeAdmin || '0') + parseFloat(shopeePayment || '0')).toFixed(1)}% + Rp {parseInt(shopeeFixed || '0').toLocaleString('id-ID')}
           </Text>
         </View>
       </View>
@@ -178,10 +204,16 @@ export default function SettingsScreen() {
           onChange={setTiktokPayment}
           description="Umumnya 2% dari total transaksi"
         />
+        <FixedFeeRow
+          label="Biaya Tetap per Pesanan"
+          value={tiktokFixed}
+          onChange={setTiktokFixed}
+          description="Biaya flat per order, default Rp 1.250"
+        />
         <View style={styles.totalFeeRow}>
           <Text style={styles.totalFeeLabel}>Total biaya estimasi per transaksi:</Text>
           <Text style={styles.totalFeeValue}>
-            {(parseFloat(tiktokAdmin || '0') + parseFloat(tiktokPayment || '0')).toFixed(1)}%
+            {(parseFloat(tiktokAdmin || '0') + parseFloat(tiktokPayment || '0')).toFixed(1)}% + Rp {parseInt(tiktokFixed || '0').toLocaleString('id-ID')}
           </Text>
         </View>
       </View>

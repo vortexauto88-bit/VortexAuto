@@ -113,14 +113,16 @@ export default function ImportScreen() {
           content,
           importedAt,
           settings.adminFees.shopeeAdminFeeRate,
-          settings.adminFees.shopeePaymentFeeRate
+          settings.adminFees.shopeePaymentFeeRate,
+          settings.adminFees.shopeeFixedFeePerOrder || 0,
         );
       } else if (platform === 'tiktok') {
         orders = await parseTikTokCSV(
           content,
           importedAt,
           settings.adminFees.tiktokAdminFeeRate,
-          settings.adminFees.tiktokPaymentFeeRate
+          settings.adminFees.tiktokPaymentFeeRate,
+          settings.adminFees.tiktokFixedFeePerOrder || 0,
         );
       } else {
         orders = await parseOfflineCSV(content, importedAt);

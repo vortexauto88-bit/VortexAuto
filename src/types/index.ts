@@ -50,8 +50,10 @@ export interface Product {
 export interface AdminFeeConfig {
   shopeeAdminFeeRate: number;      // percentage e.g. 2.5 means 2.5%
   shopeePaymentFeeRate: number;    // e.g. 2.0
+  shopeeFixedFeePerOrder: number;  // flat fee per order e.g. 1250
   tiktokAdminFeeRate: number;      // e.g. 5.0
   tiktokPaymentFeeRate: number;    // e.g. 2.0
+  tiktokFixedFeePerOrder: number;  // flat fee per order e.g. 1250
 }
 
 export interface AppSettings {

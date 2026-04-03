@@ -69,7 +69,8 @@ export async function parseShopeeCSV(
   csvContent: string,
   importedAt: string,
   adminFeeRate: number,
-  paymentFeeRate: number
+  paymentFeeRate: number,
+  fixedFeePerOrder: number = 0,
 ): Promise<Order[]> {
   const result = Papa.parse<Record<string, string>>(csvContent, {
     header: true,
@@ -167,7 +168,7 @@ export async function parseShopeeCSV(
     if (commissionFee === 0) commissionFee = grossAmount * (adminFeeRate / 100);
     if (transactionFee === 0) transactionFee = grossAmount * (paymentFeeRate / 100);
 
-    const adminFeeAmount = commissionFee + transactionFee;
+    const adminFeeAmount = commissionFee + transactionFee + fixedFeePerOrder;
     const voucherDiscount = colVoucherSeller ? parseNumber(firstRow[colVoucherSeller]) : 0;
     const shippingCost = colShippingBuyer ? parseNumber(firstRow[colShippingBuyer]) : 0;
 
@@ -190,7 +191,8 @@ export async function parseShopeeCSV(
       totalCogs,
       netIncome,
       importedAt,
-    });
+      _fixedFeeAdded: true,
+    } as any);
   }
 
   return orders;

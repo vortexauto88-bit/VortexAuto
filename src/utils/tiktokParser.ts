@@ -66,7 +66,8 @@ export async function parseTikTokCSV(
   csvContent: string,
   importedAt: string,
   adminFeeRate: number,
-  paymentFeeRate: number
+  paymentFeeRate: number,
+  fixedFeePerOrder: number = 0,
 ): Promise<Order[]> {
   const result = Papa.parse<Record<string, string>>(csvContent, {
     header: true,
@@ -165,7 +166,7 @@ export async function parseTikTokCSV(
     if (commissionFee === 0) commissionFee = grossAmount * (adminFeeRate / 100);
     if (transactionFee === 0) transactionFee = grossAmount * (paymentFeeRate / 100);
 
-    const adminFeeAmount = commissionFee + transactionFee;
+    const adminFeeAmount = commissionFee + transactionFee + fixedFeePerOrder;
     const netAmount = grossAmount - adminFeeAmount;
     const totalCogs = items.reduce((s, i) => s + i.totalCogs, 0);
     const netIncome = netAmount - totalCogs;
@@ -185,7 +186,8 @@ export async function parseTikTokCSV(
       totalCogs,
       netIncome,
       importedAt,
-    });
+      _fixedFeeAdded: true,
+    } as any);
   }
 
   return orders;
