@@ -6,6 +6,7 @@ import {
   ImportSession,
   AdminFeeConfig,
 } from '../types';
+import { findCogsByVariant } from '../utils/helpers';
 
 const KEYS = {
   ORDERS: 'vortex_orders',
@@ -97,11 +98,37 @@ export async function deleteProduct(id: string): Promise<void> {
 
 export async function getProductByName(name: string): Promise<Product | undefined> {
   const products = await getAllProducts();
+  const norm = name.toLowerCase().trim();
   return products.find(
     (p) =>
-      p.name.toLowerCase().trim() === name.toLowerCase().trim() ||
-      p.sku.toLowerCase().trim() === name.toLowerCase().trim()
+      p.name.toLowerCase().trim() === norm ||
+      (p.sku && p.sku.toLowerCase().trim() === norm)
   );
+}
+
+/**
+ * Find a product by fuzzy name match (sales product name is usually longer than the stored name),
+ * then resolve the correct HPP accounting for variant name and bundle quantity.
+ *
+ * Returns { cogs, productId } — cogs here is per-order-item-unit (already includes bundle multiplier).
+ */
+export async function getProductCogsByNameAndVariant(
+  productName: string,
+  variantName: string,
+): Promise<{ cogs: number; productId: string }> {
+  const products = await getAllProducts();
+  const nameNorm = productName.toLowerCase().trim();
+
+  // Fuzzy match: stored product name should be a substring of (or equal to) the sales product name
+  const product = products.find((p) => {
+    const pNorm = p.name.toLowerCase().trim();
+    return nameNorm.includes(pNorm) || pNorm.includes(nameNorm);
+  });
+
+  if (!product) return { cogs: 0, productId: '' };
+
+  const cogs = findCogsByVariant(product, variantName || '');
+  return { cogs, productId: product.id };
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────

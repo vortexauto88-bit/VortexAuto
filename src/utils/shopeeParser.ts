@@ -22,13 +22,14 @@
 import Papa from 'papaparse';
 import { Order, OrderItem, Platform } from '../types';
 import { generateId, parseLocalDate } from './helpers';
-import { getProductByName } from '../storage/database';
+import { getProductCogsByNameAndVariant } from '../storage/database';
 
 // Map of possible column name variations (lowercase)
 const COL = {
   orderId: ['no. pesanan', 'order id', 'nomor pesanan', 'no pesanan'],
   status: ['status pesanan', 'order status', 'status'],
   productName: ['nama produk', 'product name', 'nama produk(s)', "product name(s)"],
+  variantName: ['nama variasi', 'variasi produk', 'variation name', 'variant name', 'nama varian'],
   quantity: ['jumlah', 'quantity', 'jumlah produk'],
   unitPrice: ['harga satuan produk', 'unit price', 'harga satuan'],
   productSubtotal: ['total harga produk', 'product subtotal', 'subtotal produk'],
@@ -85,6 +86,7 @@ export async function parseShopeeCSV(
   const colOrderId = findColumn(headers, COL.orderId);
   const colStatus = findColumn(headers, COL.status);
   const colProductName = findColumn(headers, COL.productName);
+  const colVariantName = findColumn(headers, COL.variantName);
   const colQuantity = findColumn(headers, COL.quantity);
   const colUnitPrice = findColumn(headers, COL.unitPrice);
   const colProductSubtotal = findColumn(headers, COL.productSubtotal);
@@ -130,19 +132,20 @@ export async function parseShopeeCSV(
 
     for (const row of rows) {
       const productName = colProductName ? (row[colProductName] || 'Produk').trim() : 'Produk';
+      const variantName = colVariantName ? (row[colVariantName] || '').trim() : '';
       const quantity = colQuantity ? parseNumber(row[colQuantity]) : 1;
       const unitPrice = colUnitPrice ? parseNumber(row[colUnitPrice]) : 0;
       let subtotal = colProductSubtotal ? parseNumber(row[colProductSubtotal]) : unitPrice * quantity;
 
       if (subtotal === 0) subtotal = unitPrice * quantity;
 
-      // Look up COGS from product database
-      const product = await getProductByName(productName);
-      const cogsPerUnit = product?.cogs || 0;
+      // Look up COGS from product database using variant-aware matching
+      const { cogs: cogsPerUnit, productId } = await getProductCogsByNameAndVariant(productName, variantName);
 
       items.push({
-        productId: product?.id || '',
+        productId,
         productName,
+        variantName,
         quantity,
         unitPrice,
         subtotal,

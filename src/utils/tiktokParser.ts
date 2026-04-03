@@ -20,12 +20,13 @@
 import Papa from 'papaparse';
 import { Order, OrderItem, Platform } from '../types';
 import { generateId, parseLocalDate } from './helpers';
-import { getProductByName } from '../storage/database';
+import { getProductCogsByNameAndVariant } from '../storage/database';
 
 const COL = {
   orderId: ['order id', 'order_id', 'no. pesanan', 'id pesanan'],
   status: ['order status', 'status', 'status pesanan'],
   productName: ['product name', 'nama produk', 'product name(s)'],
+  variantName: ['variation name', 'variant name', 'nama variasi', 'sku name', 'product variation'],
   sku: ['seller sku', 'sku id', 'sku'],
   quantity: ['quantity', 'jumlah', 'qty'],
   unitPrice: ['sku unit original price', 'product price', 'harga produk', 'unit price'],
@@ -82,6 +83,7 @@ export async function parseTikTokCSV(
   const colOrderId = findColumn(headers, COL.orderId);
   const colStatus = findColumn(headers, COL.status);
   const colProductName = findColumn(headers, COL.productName);
+  const colVariantName = findColumn(headers, COL.variantName);
   const colSku = findColumn(headers, COL.sku);
   const colQuantity = findColumn(headers, COL.quantity);
   const colUnitPrice = findColumn(headers, COL.unitPrice);
@@ -125,6 +127,7 @@ export async function parseTikTokCSV(
 
     for (const row of rows) {
       const productName = colProductName ? (row[colProductName] || 'Produk').trim() : 'Produk';
+      const variantName = colVariantName ? (row[colVariantName] || '').trim() : '';
       const sku = colSku ? (row[colSku] || '').trim() : '';
       const quantity = colQuantity ? parseNumber(row[colQuantity]) : 1;
       const unitPrice = colUnitPrice ? parseNumber(row[colUnitPrice]) : 0;
@@ -134,12 +137,12 @@ export async function parseTikTokCSV(
       else if (colSubtotalBefore) subtotal = parseNumber(row[colSubtotalBefore]);
       else subtotal = unitPrice * quantity;
 
-      const product = await getProductByName(sku || productName);
-      const cogsPerUnit = product?.cogs || 0;
+      const { cogs: cogsPerUnit, productId } = await getProductCogsByNameAndVariant(productName, variantName);
 
       items.push({
-        productId: product?.id || '',
+        productId,
         productName,
+        variantName,
         sku,
         quantity,
         unitPrice,

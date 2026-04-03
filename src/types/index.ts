@@ -5,11 +5,12 @@ export type OrderStatus = 'completed' | 'cancelled' | 'returned' | 'pending';
 export interface OrderItem {
   productId: string;
   productName: string;
+  variantName?: string; // variant from Shopee/TikTok, e.g. "0.8 L", "1 L", "3"
   sku?: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;
-  cogs: number; // Cost of Goods Sold per unit
+  cogs: number; // Cost of Goods Sold per unit (already includes bundle multiplier)
   totalCogs: number; // cogs * quantity
 }
 
@@ -25,16 +26,23 @@ export interface Order {
   voucherDiscount: number;   // Voucher/discount amount
   shippingCost: number;      // Shipping cost (if applicable)
   netAmount: number;         // grossAmount - adminFeeAmount
-  totalCogs: number;         // Sum of all item COGSg
+  totalCogs: number;         // Sum of all item COGS
   netIncome: number;         // netAmount - totalCogs
   importedAt: string;        // When was this record imported
+}
+
+export interface ProductVariant {
+  id: string;
+  label: string;  // variant name, e.g. "0.8 L", "1 L", "120 ml"
+  cogs: number;   // HPP per pcs/unit (NOT per bundle)
 }
 
 export interface Product {
   id: string;
   name: string;
   sku: string;
-  cogs: number; // Cost of Goods Sold
+  cogs: number;              // fallback HPP when no variant matched
+  variants: ProductVariant[]; // per-variant HPP
   createdAt: string;
   updatedAt: string;
 }

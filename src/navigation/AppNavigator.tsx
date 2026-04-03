@@ -9,6 +9,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import ImportScreen from '../screens/ImportScreen';
 import ReportScreen from '../screens/ReportScreen';
 import COGSScreen from '../screens/COGSScreen';
+import OrdersScreen from '../screens/OrdersScreen';
 import ReturnScreen from '../screens/ReturnScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { COLORS } from '../theme';
@@ -41,6 +42,7 @@ export default function AppNavigator() {
               Import: { active: 'cloud-upload', inactive: 'cloud-upload-outline' },
               Laporan: { active: 'bar-chart', inactive: 'bar-chart-outline' },
               COGS: { active: 'cube', inactive: 'cube-outline' },
+              Orderan: { active: 'receipt', inactive: 'receipt-outline' },
               Retur: { active: 'return-up-back', inactive: 'return-up-back-outline' },
               Pengaturan: { active: 'settings', inactive: 'settings-outline' },
             };
@@ -53,6 +55,7 @@ export default function AppNavigator() {
         <Tab.Screen name="Import" component={ImportScreen} />
         <Tab.Screen name="Laporan" component={ReportScreen} />
         <Tab.Screen name="COGS" component={COGSScreen} />
+        <Tab.Screen name="Orderan" component={OrdersScreen} />
         <Tab.Screen name="Retur" component={ReturnScreen} />
         <Tab.Screen name="Pengaturan" component={SettingsScreen} />
       </Tab.Navigator>

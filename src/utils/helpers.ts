@@ -1,11 +1,109 @@
 import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { Order, SalesSummary, PlatformSummary, ChartDataPoint, DateRange, DateRangeType } from '../types';
+import { Order, Product, SalesSummary, PlatformSummary, ChartDataPoint, DateRange, DateRangeType } from '../types';
 
 // ── ID Generator ─────────────────────────────────────────────────────────────
 
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+}
+
+// ── Variant / HPP Matching ────────────────────────────────────────────────────
+
+/**
+ * Normalize a variant label to a compact key for fuzzy matching.
+ * Examples:
+ *   "0.8 L"          → "08l"
+ *   "1 L"            → "1l"
+ *   "120 ml"         → "120ml"
+ *   "0.8 lter|20w-40"→ "08l"   (take part before "|")
+ *   "1 botol|100 ml" → "100ml"
+ */
+export function normalizeVariantKey(v: string): string {
+  let s = v.toLowerCase().trim();
+  // If contains "|", prefer the part that has volume info (ml/l)
+  if (s.includes('|')) {
+    const parts = s.split('|');
+    // Pick the part containing a volume unit
+    const volPart = parts.find(p => /\d+\s*(ml|l\b|liter|litre|ltr)/.test(p));
+    s = (volPart || parts[parts.length - 1]).trim();
+  }
+  return s
+    .replace(/\bliter\b|\blitre\b|\bltr\b/g, 'l')
+    .replace(/\bbotol\b/g, '')
+    .replace(/\s+/g, '')
+    .replace(/\./g, '')        // "0.8" → "08"
+    .replace(/[^0-9a-z]/g, '');
+}
+
+/**
+ * Extract a quantity multiplier from a Shopee variant name.
+ * Used when the variant represents a bundle.
+ *
+ * Examples:
+ *   "3"           → { sizeKey: "",      qty: 3 }  ← pure qty (single-type product)
+ *   "5"           → { sizeKey: "",      qty: 5 }
+ *   "120 ml x 5"  → { sizeKey: "120ml", qty: 5 }
+ *   "3 botol|120 ml" → { sizeKey: "120ml", qty: 3 }
+ *   "0.8 L"       → { sizeKey: "08l",   qty: 1 }
+ *   "1 L"         → { sizeKey: "1l",    qty: 1 }
+ */
+export function extractVariantQty(variantName: string): { sizeKey: string; qty: number } {
+  const v = variantName.trim();
+
+  // Pure integer → quantity multiplier for a single-type product
+  if (/^\d+$/.test(v)) {
+    return { sizeKey: '', qty: parseInt(v, 10) };
+  }
+
+  // "size x N" pattern, e.g., "120 ml x 5", "120ml X 3"
+  const xMatch = v.match(/^(.+?)\s*[xX×]\s*(\d+)$/);
+  if (xMatch) {
+    return { sizeKey: normalizeVariantKey(xMatch[1].trim()), qty: parseInt(xMatch[2], 10) };
+  }
+
+  // "N botol|size" pattern, e.g., "3 botol|120 ml"
+  const botolMatch = v.match(/^(\d+)\s*botol[|\s](.+)$/i);
+  if (botolMatch && parseInt(botolMatch[1], 10) > 1) {
+    return { sizeKey: normalizeVariantKey(botolMatch[2].trim()), qty: parseInt(botolMatch[1], 10) };
+  }
+
+  return { sizeKey: normalizeVariantKey(v), qty: 1 };
+}
+
+/**
+ * Look up the HPP (COGS per order-item unit) for a product given its variant name.
+ *
+ * Logic:
+ * 1. If product has no variants → return product.cogs (fallback).
+ * 2. Extract sizeKey + qty multiplier from variantName.
+ * 3. Match sizeKey against each variant's normalized label.
+ * 4. Return matchedVariant.cogs × qty  (HPP per pcs × bundle size).
+ * 5. Fallback to product.cogs × qty if no variant matched.
+ */
+export function findCogsByVariant(product: Product, variantName: string): number {
+  if (!product.variants || product.variants.length === 0) {
+    return product.cogs;
+  }
+
+  if (!variantName) return product.cogs;
+
+  const { sizeKey, qty } = extractVariantQty(variantName);
+
+  if (!sizeKey) {
+    // Pure-qty variant (e.g., "3") → multiply the first/only variant's HPP
+    const baseCogs = product.variants[0]?.cogs ?? product.cogs;
+    return baseCogs * qty;
+  }
+
+  // Find the best matching variant
+  const matched = product.variants.find((v) => {
+    const vKey = normalizeVariantKey(v.label);
+    return vKey === sizeKey || vKey.includes(sizeKey) || sizeKey.includes(vKey);
+  });
+
+  const baseCogs = matched?.cogs ?? product.cogs;
+  return baseCogs * qty;
 }
 
 // ── Date Parsing ─────────────────────────────────────────────────────────────
