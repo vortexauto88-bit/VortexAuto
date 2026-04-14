@@ -221,18 +221,17 @@ export async function recalculateAllCogs(): Promise<number> {
 
     const totalCogs = newItems.reduce((s, i) => s + i.totalCogs, 0);
 
-    // Add fixed fee per order if not already in adminFeeAmount
-    const fixedFee = order.platform === 'shopee'
-      ? (settings.adminFees.shopeeFixedFeePerOrder || 0)
-      : order.platform === 'tiktok'
-        ? (settings.adminFees.tiktokFixedFeePerOrder || 0)
-        : 0;
-
-    // Re-add fixed fee only if it's not yet included (adminFeeAmount doesn't already account for it)
-    // We detect this by checking if the stored fixedFee field exists
-    const adminFeeAmount = (order as any)._fixedFeeAdded
-      ? order.adminFeeAmount
-      : order.adminFeeAmount + fixedFee;
+    // Recalculate admin fee from current settings (rate % × gross + fixed fee)
+    let adminFeeAmount = order.adminFeeAmount;
+    if (order.platform === 'shopee') {
+      const rate = (settings.adminFees.shopeeAdminFeeRate + settings.adminFees.shopeePaymentFeeRate) / 100;
+      const fixed = settings.adminFees.shopeeFixedFeePerOrder || 0;
+      adminFeeAmount = order.grossAmount * rate + fixed;
+    } else if (order.platform === 'tiktok') {
+      const rate = (settings.adminFees.tiktokAdminFeeRate + settings.adminFees.tiktokPaymentFeeRate) / 100;
+      const fixed = settings.adminFees.tiktokFixedFeePerOrder || 0;
+      adminFeeAmount = order.grossAmount * rate + fixed;
+    }
     const netAmount = order.grossAmount - adminFeeAmount;
 
     return {

@@ -21,6 +21,7 @@ import { COLORS, SPACING } from '../theme';
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Admin fee form
   const [shopeeAdmin, setShopeeAdmin] = useState('');
@@ -62,7 +63,13 @@ export default function SettingsScreen() {
       };
       await saveSettings(updated);
       setSettings(updated);
-      Alert.alert('Tersimpan', 'Pengaturan berhasil disimpan. Biaya admin akan diterapkan pada import berikutnya.');
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+      if (RNPlatform.OS !== 'web') {
+        Alert.alert('Tersimpan', 'Pengaturan berhasil disimpan.');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', 'Gagal menyimpan: ' + (err?.message || String(err)));
     } finally {
       setSaving(false);
     }
@@ -225,9 +232,14 @@ export default function SettingsScreen() {
       </View>
 
       {/* Save Button */}
-      <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
+      <TouchableOpacity style={[styles.saveBtn, saveSuccess && { backgroundColor: '#16a34a' }]} onPress={handleSave} disabled={saving}>
         {saving ? (
           <ActivityIndicator size="small" color={COLORS.white} />
+        ) : saveSuccess ? (
+          <>
+            <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.white} />
+            <Text style={styles.saveBtnText}>Tersimpan!</Text>
+          </>
         ) : (
           <>
             <Ionicons name="save-outline" size={18} color={COLORS.white} />
