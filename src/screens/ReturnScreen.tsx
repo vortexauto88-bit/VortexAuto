@@ -122,23 +122,21 @@ export default function ReturnScreen() {
   };
 
   const handleDelete = (order: Order) => {
-    Alert.alert(
-      'Hapus Retur',
-      `Hapus retur pesanan "${order.externalId}"?`,
-      [
+    const msg = `Hapus retur pesanan "${order.externalId}"?`;
+    const doDelete = async () => {
+      const all = await getAllOrders();
+      const filtered = all.filter((o) => o.id !== order.id);
+      await saveOrders(filtered);
+      await loadData();
+    };
+    if (Platform.OS === 'web') {
+      if ((global as any).confirm(`Hapus Retur\n\n${msg}`)) doDelete();
+    } else {
+      Alert.alert('Hapus Retur', msg, [
         { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus',
-          style: 'destructive',
-          onPress: async () => {
-            const all = await getAllOrders();
-            const filtered = all.filter((o) => o.id !== order.id);
-            await saveOrders(filtered);
-            await loadData();
-          },
-        },
-      ]
-    );
+        { text: 'Hapus', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   };
 
   const PLATFORM_OPTIONS: { id: PlatformType; label: string }[] = [

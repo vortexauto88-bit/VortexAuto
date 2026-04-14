@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform as RNPlatform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -68,21 +69,16 @@ export default function SettingsScreen() {
   };
 
   const handleClearData = () => {
-    Alert.alert(
-      'Hapus Semua Data',
-      'Semua data pesanan dan riwayat import akan dihapus permanen. Data produk/COGS tetap ada. Yakin?',
-      [
+    const msg = 'Semua data pesanan dan riwayat import akan dihapus permanen. Data produk/COGS tetap ada. Yakin?';
+    const doDelete = async () => { await clearAllData(); Alert.alert('Berhasil', 'Semua data pesanan telah dihapus.'); };
+    if (RNPlatform.OS === 'web') {
+      if ((global as any).confirm(`Hapus Semua Data\n\n${msg}`)) doDelete();
+    } else {
+      Alert.alert('Hapus Semua Data', msg, [
         { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus Semua',
-          style: 'destructive',
-          onPress: async () => {
-            await clearAllData();
-            Alert.alert('Berhasil', 'Semua data pesanan telah dihapus.');
-          },
-        },
-      ]
-    );
+        { text: 'Hapus Semua', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   };
 
   if (!settings) {

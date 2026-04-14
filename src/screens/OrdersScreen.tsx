@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Platform as RNPlatform,
   ScrollView,
   StyleSheet,
   Text,
@@ -65,27 +66,26 @@ export default function OrdersScreen() {
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
-  const handleRecalculate = async () => {
-    Alert.alert(
-      'Hitung Ulang COGS',
-      'Semua order akan di-update COGS-nya berdasarkan data produk/varian yang sekarang. Lanjutkan?',
-      [
+  const handleRecalculate = () => {
+    const msg = 'Semua order akan di-update COGS-nya berdasarkan data produk/varian yang sekarang. Lanjutkan?';
+    const doRecalculate = async () => {
+      setRecalculating(true);
+      try {
+        const count = await recalculateAllCogs();
+        await loadData();
+        Alert.alert('Selesai', `COGS berhasil dihitung ulang untuk ${count} order.`);
+      } finally {
+        setRecalculating(false);
+      }
+    };
+    if (RNPlatform.OS === 'web') {
+      if ((global as any).confirm(`Hitung Ulang COGS\n\n${msg}`)) doRecalculate();
+    } else {
+      Alert.alert('Hitung Ulang COGS', msg, [
         { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Ya, Hitung Ulang',
-          onPress: async () => {
-            setRecalculating(true);
-            try {
-              const count = await recalculateAllCogs();
-              await loadData();
-              Alert.alert('Selesai', `COGS berhasil dihitung ulang untuk ${count} order.`);
-            } finally {
-              setRecalculating(false);
-            }
-          },
-        },
-      ]
-    );
+        { text: 'Ya, Hitung Ulang', onPress: doRecalculate },
+      ]);
+    }
   };
 
   const toggleExpand = (id: string) => {

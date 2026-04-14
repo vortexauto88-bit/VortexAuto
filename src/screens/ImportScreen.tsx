@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform as RNPlatform,
   ScrollView,
   Share,
   StyleSheet,
@@ -168,21 +169,16 @@ export default function ImportScreen() {
   };
 
   const handleDeleteSession = (session: ImportSession) => {
-    Alert.alert(
-      'Hapus Import',
-      `Hapus data import "${session.fileName}"?\nSemua ${session.orderCount} pesanan dari import ini akan dihapus.`,
-      [
+    const msg = `Hapus data import "${session.fileName}"?\nSemua ${session.orderCount} pesanan dari import ini akan dihapus.`;
+    const doDelete = async () => { await deleteImportSession(session.id); await loadSessions(); };
+    if (RNPlatform.OS === 'web') {
+      if ((global as any).confirm(`Hapus Import\n\n${msg}`)) doDelete();
+    } else {
+      Alert.alert('Hapus Import', msg, [
         { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteImportSession(session.id);
-            await loadSessions();
-          },
-        },
-      ]
-    );
+        { text: 'Hapus', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   };
 
   const handleDownloadTemplate = async () => {
