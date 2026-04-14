@@ -17,7 +17,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import Papa from 'papaparse';
-import { downloadFile } from '../utils/fileUtils';
+import { downloadFile, readUri } from '../utils/fileUtils';
 
 import { deleteProduct, getAllOrders, getAllProducts, saveProduct } from '../storage/database';
 import { generateId } from '../utils/helpers';
@@ -233,7 +233,6 @@ export default function COGSScreen() {
       });
       if (result.canceled || !result.assets?.[0]) return;
 
-      const { readUri } = await import('../utils/fileUtils');
       const content = await readUri(result.assets[0].uri, 'utf8');
       const parsed = Papa.parse<Record<string, string>>(content, { header: true, skipEmptyLines: true });
 
