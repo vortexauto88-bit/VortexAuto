@@ -20,7 +20,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -28,7 +29,11 @@ jobs:
       - name: Export web build
         run: npx expo export --platform web
         env:
-          CI: true
+          CI: false
+          EXPO_NO_TELEMETRY: 1
+
+      - name: List dist contents
+        run: ls -la ./dist || echo "dist directory not found!"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
