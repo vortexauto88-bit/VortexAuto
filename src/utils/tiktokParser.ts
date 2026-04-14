@@ -72,7 +72,6 @@ export async function parseTikTokCSV(
   const result = Papa.parse<Record<string, string>>(csvContent, {
     header: true,
     skipEmptyLines: true,
-    encoding: 'UTF-8',
   });
 
   if (result.errors.length > 0 && result.data.length === 0) {

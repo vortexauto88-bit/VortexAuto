@@ -152,7 +152,7 @@ export default function SettingsScreen() {
         </View>
         <Text style={styles.sectionNote}>
           Biaya ini digunakan jika file CSV tidak mengandung kolom biaya admin.
-          Cek di Shopee Seller Center > Biaya & Komisi.
+          Cek di Shopee Seller Center {'>'} Biaya &amp; Komisi.
         </Text>
 
         <FeeRow
@@ -189,7 +189,7 @@ export default function SettingsScreen() {
         </View>
         <Text style={styles.sectionNote}>
           Biaya ini digunakan jika file CSV tidak mengandung kolom biaya komisi.
-          Cek di TikTok Seller Center > Biaya & Komisi.
+          Cek di TikTok Seller Center {'>'} Biaya &amp; Komisi.
         </Text>
 
         <FeeRow

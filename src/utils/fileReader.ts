@@ -54,7 +54,6 @@ function parseCSVContent(content: string): { rows: Record<string, string>[]; hea
   const result = Papa.parse<Record<string, string>>(content, {
     header: true,
     skipEmptyLines: true,
-    encoding: 'UTF-8',
     transformHeader: (h) => h.trim(),
   });
 
