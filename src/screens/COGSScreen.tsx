@@ -92,6 +92,18 @@ export default function COGSScreen() {
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
+  // ── Web-compatible confirm dialog ────────────────────────────────────────────
+  const confirmDialog = (title: string, message: string, onConfirm: () => void, confirmText = 'OK') => {
+    if (Platform.OS === 'web') {
+      if ((global as any).confirm(`${title}\n\n${message}`)) onConfirm();
+    } else {
+      Alert.alert(title, message, [
+        { text: 'Batal', style: 'cancel' },
+        { text: confirmText, style: 'destructive', onPress: onConfirm },
+      ]);
+    }
+  };
+
   // ── Product CRUD ────────────────────────────────────────────────────────────
 
   const openAddProduct = () => {
@@ -137,20 +149,11 @@ export default function COGSScreen() {
   };
 
   const handleDeleteProduct = (product: Product) => {
-    Alert.alert(
+    confirmDialog(
       'Hapus Produk',
       `Hapus "${product.name}" beserta semua variannya?`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteProduct(product.id);
-            await loadData();
-          },
-        },
-      ]
+      async () => { await deleteProduct(product.id); await loadData(); },
+      'Hapus'
     );
   };
 
@@ -205,21 +208,15 @@ export default function COGSScreen() {
   };
 
   const handleDeleteVariant = (product: Product, variant: ProductVariant) => {
-    Alert.alert(
+    confirmDialog(
       'Hapus Varian',
       `Hapus varian "${variant.label}" (HPP Rp ${Math.round(variant.cogs).toLocaleString('id-ID')})?`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus',
-          style: 'destructive',
-          onPress: async () => {
-            const variants = product.variants.filter((v) => v.id !== variant.id);
-            await saveProduct({ ...product, variants, updatedAt: new Date().toISOString() });
-            await loadData();
-          },
-        },
-      ]
+      async () => {
+        const variants = product.variants.filter((v) => v.id !== variant.id);
+        await saveProduct({ ...product, variants, updatedAt: new Date().toISOString() });
+        await loadData();
+      },
+      'Hapus'
     );
   };
 
@@ -303,63 +300,62 @@ export default function COGSScreen() {
   };
 
   const handleLoadDefault = () => {
-    Alert.alert(
+    const doLoad = async () => {
+      setSaving(true);
+      try {
+        const existing = await getAllProducts();
+        const existingByName = new Map(existing.map((p) => [p.name.toLowerCase(), p]));
+        const now = new Date().toISOString();
+
+        // Group default data by product name
+        const productMap = new Map<string, { variants: { label: string; cogs: number }[] }>();
+        for (const row of DEFAULT_HPP_DATA) {
+          if (!productMap.has(row.productName)) productMap.set(row.productName, { variants: [] });
+          if (row.variantLabel) {
+            productMap.get(row.productName)!.variants.push({ label: row.variantLabel, cogs: row.cogs });
+          }
+        }
+
+        for (const [name, { variants }] of productMap) {
+          const ex = existingByName.get(name.toLowerCase());
+          const fallbackCogs = DEFAULT_HPP_DATA.find(
+            (r) => r.productName === name && !r.variantLabel
+          )?.cogs || 0;
+          const newVariants: ProductVariant[] = variants.map((v) => ({
+            id: generateId(), label: v.label, cogs: v.cogs,
+          }));
+
+          if (ex) {
+            const existingLabels = new Set(ex.variants.map((v) => v.label.toLowerCase()));
+            const toAdd = newVariants.filter((v) => !existingLabels.has(v.label.toLowerCase()));
+            await saveProduct({
+              ...ex,
+              cogs: ex.cogs || fallbackCogs,
+              variants: [...ex.variants, ...toAdd],
+              updatedAt: now,
+            });
+          } else {
+            await saveProduct({
+              id: generateId(), name, sku: '', cogs: fallbackCogs,
+              variants: newVariants, createdAt: now, updatedAt: now,
+            });
+          }
+        }
+
+        await loadData();
+        Alert.alert('Berhasil', 'Data HPP bawaan berhasil dimuat. Silakan cek tab Orderan dan tekan "Hitung Ulang COGS".');
+      } catch (err: any) {
+        Alert.alert('Gagal', err.message);
+      } finally {
+        setSaving(false);
+      }
+    };
+
+    confirmDialog(
       'Muat Data HPP Bawaan',
       `Akan memuat ${DEFAULT_HPP_DATA.length} baris HPP (36 produk). Data yang sudah ada tidak akan dihapus, hanya ditambah/diperbarui. Lanjutkan?`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Muat Sekarang',
-          onPress: async () => {
-            setSaving(true);
-            try {
-              const existing = await getAllProducts();
-              const existingByName = new Map(existing.map((p) => [p.name.toLowerCase(), p]));
-              const now = new Date().toISOString();
-
-              // Group default data by product name
-              const productMap = new Map<string, { variants: { label: string; cogs: number }[] }>();
-              for (const row of DEFAULT_HPP_DATA) {
-                if (!productMap.has(row.productName)) productMap.set(row.productName, { variants: [] });
-                if (row.variantLabel) {
-                  productMap.get(row.productName)!.variants.push({ label: row.variantLabel, cogs: row.cogs });
-                }
-              }
-
-              for (const [name, { variants }] of productMap) {
-                const ex = existingByName.get(name.toLowerCase());
-                const fallbackCogs = DEFAULT_HPP_DATA.find(
-                  (r) => r.productName === name && !r.variantLabel
-                )?.cogs || 0;
-                const newVariants: ProductVariant[] = variants.map((v) => ({
-                  id: generateId(), label: v.label, cogs: v.cogs,
-                }));
-
-                if (ex) {
-                  const existingLabels = new Set(ex.variants.map((v) => v.label.toLowerCase()));
-                  const toAdd = newVariants.filter((v) => !existingLabels.has(v.label.toLowerCase()));
-                  await saveProduct({
-                    ...ex,
-                    cogs: ex.cogs || fallbackCogs,
-                    variants: [...ex.variants, ...toAdd],
-                    updatedAt: now,
-                  });
-                } else {
-                  await saveProduct({
-                    id: generateId(), name, sku: '', cogs: fallbackCogs,
-                    variants: newVariants, createdAt: now, updatedAt: now,
-                  });
-                }
-              }
-
-              await loadData();
-              Alert.alert('Berhasil', 'Data HPP bawaan berhasil dimuat. Silakan cek tab Orderan dan tekan "Hitung Ulang COGS".');
-            } finally {
-              setSaving(false);
-            }
-          },
-        },
-      ]
+      doLoad,
+      'Muat Sekarang'
     );
   };
 
