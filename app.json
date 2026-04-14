@@ -30,7 +30,6 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "output": "static",
       "name": "VortexAuto",
       "shortName": "VortexAuto",
       "description": "Aplikasi Laporan Penjualan Otomotif"
