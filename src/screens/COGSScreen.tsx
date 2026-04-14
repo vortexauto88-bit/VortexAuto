@@ -16,9 +16,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
-import * as Share from 'expo-sharing';
 import Papa from 'papaparse';
+import { downloadFile } from '../utils/fileUtils';
 
 import { deleteProduct, getAllOrders, getAllProducts, saveProduct } from '../storage/database';
 import { generateId } from '../utils/helpers';
@@ -234,7 +233,8 @@ export default function COGSScreen() {
       });
       if (result.canceled || !result.assets?.[0]) return;
 
-      const content = await FileSystem.readAsStringAsync(result.assets[0].uri, { encoding: 'utf8' });
+      const { readUri } = await import('../utils/fileUtils');
+      const content = await readUri(result.assets[0].uri, 'utf8');
       const parsed = Papa.parse<Record<string, string>>(content, { header: true, skipEmptyLines: true });
 
       // Group rows: (Nama Produk) → [{Nama Variasi, COGS}]
@@ -373,9 +373,7 @@ export default function COGSScreen() {
       'MPX 1,1 L,32500,',
       'AHM Gear,120 ml,6979,',
     ].join('\n');
-    const path = FileSystem.documentDirectory + 'template_hpp.csv';
-    await FileSystem.writeAsStringAsync(path, csv, { encoding: 'utf8' });
-    await Share.shareAsync(path, { mimeType: 'text/csv' });
+    await downloadFile(csv, 'template_hpp.csv', 'text/csv');
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────

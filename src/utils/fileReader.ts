@@ -3,9 +3,9 @@
  * Uses SheetJS (xlsx) to convert Excel to CSV, then PapaParse reads it.
  */
 
-import * as FileSystem from 'expo-file-system';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
+import { readUri } from './fileUtils';
 
 export type FileType = 'csv' | 'xlsx' | 'xls' | 'unknown';
 
@@ -28,17 +28,12 @@ export async function readFileAsRows(
   const fileType = detectFileType(fileName);
 
   if (fileType === 'csv' || fileType === 'unknown') {
-    // Read as plain text
-    const content = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
+    const content = await readUri(uri, 'utf8');
     return parseCSVContent(content);
   }
 
   // Read Excel as base64
-  const base64 = await FileSystem.readAsStringAsync(uri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
+  const base64 = await readUri(uri, 'base64');
 
   const workbook = XLSX.read(base64, { type: 'base64', cellText: true, cellDates: true });
 
@@ -76,13 +71,11 @@ export async function readFileAsString(uri: string, fileName: string): Promise<s
   const fileType = detectFileType(fileName);
 
   if (fileType === 'csv' || fileType === 'unknown') {
-    return FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
+    return readUri(uri, 'utf8');
   }
 
   // Excel: convert to CSV string
-  const base64 = await FileSystem.readAsStringAsync(uri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
+  const base64 = await readUri(uri, 'base64');
 
   const workbook = XLSX.read(base64, { type: 'base64', cellText: true, cellDates: true });
   const sheetName = workbook.SheetNames[0];

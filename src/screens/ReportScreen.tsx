@@ -1,20 +1,18 @@
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Platform as RNPlatform,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { format, parseISO } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import * as FileSystem from 'expo-file-system';
+import { downloadFile } from '../utils/fileUtils';
+import DatePickerField from '../components/DatePickerField';
 
 import { getOrdersByDateRange, getSettings } from '../storage/database';
 import {
@@ -95,8 +93,6 @@ export default function ReportScreen() {
   const [dateRange, setDateRange] = useState<DateRange>(getDateRange('monthly'));
   const [customStart, setCustomStart] = useState(new Date());
   const [customEnd, setCustomEnd] = useState(new Date());
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [summary, setSummary] = useState<SalesSummary | null>(null);
@@ -154,9 +150,7 @@ export default function ReportScreen() {
     try {
       const csv = buildCSVReport(orders, summary, dateRange, currencySymbol);
       const fileName = `laporan_${dateRange.startDate}_${dateRange.endDate}.csv`;
-      const path = FileSystem.documentDirectory + fileName;
-      await FileSystem.writeAsStringAsync(path, csv, { encoding: 'utf8' });
-      await Share.share({ url: path, title: fileName });
+      await downloadFile(csv, fileName, 'text/csv');
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -211,35 +205,19 @@ export default function ReportScreen() {
       {/* Custom Date Picker */}
       {activeTab === 'custom' && (
         <View style={styles.customDateSection}>
-          <TouchableOpacity style={styles.datePicker} onPress={() => setShowStartPicker(true)}>
-            <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
-            <Text style={styles.datePickerText}>
-              Dari: {format(customStart, 'd MMM yyyy', { locale: idLocale })}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.datePicker} onPress={() => setShowEndPicker(true)}>
-            <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
-            <Text style={styles.datePickerText}>
-              Sampai: {format(customEnd, 'd MMM yyyy', { locale: idLocale })}
-            </Text>
-          </TouchableOpacity>
+          <DatePickerField
+            label="Dari"
+            value={customStart}
+            onChange={setCustomStart}
+          />
+          <DatePickerField
+            label="Sampai"
+            value={customEnd}
+            onChange={setCustomEnd}
+          />
           <TouchableOpacity style={styles.applyBtn} onPress={applyCustomRange}>
             <Text style={styles.applyBtnText}>Tampilkan</Text>
           </TouchableOpacity>
-          {showStartPicker && (
-            <DateTimePicker
-              value={customStart}
-              mode="date"
-              onChange={(_, date) => { setShowStartPicker(false); if (date) setCustomStart(date); }}
-            />
-          )}
-          {showEndPicker && (
-            <DateTimePicker
-              value={customEnd}
-              mode="date"
-              onChange={(_, date) => { setShowEndPicker(false); if (date) setCustomEnd(date); }}
-            />
-          )}
         </View>
       )}
 

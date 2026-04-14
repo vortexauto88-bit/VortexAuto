@@ -28,7 +28,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DatePickerField from '../components/DatePickerField';
 
 import { addOrders, getAllOrders, getSettings, saveOrders } from '../storage/database';
 import { generateId, formatCurrencyShort } from '../utils/helpers';
@@ -44,7 +44,6 @@ export default function ReturnScreen() {
 
   // Form state
   const [formDate, setFormDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [formOrderId, setFormOrderId] = useState('');
   const [formPlatform, setFormPlatform] = useState<PlatformType>('shopee');
   const [formAmount, setFormAmount] = useState('');
@@ -242,20 +241,11 @@ export default function ReturnScreen() {
             <Text style={styles.modalTitle}>Tambah Retur Manual</Text>
 
             {/* Date */}
-            <Text style={styles.inputLabel}>Tanggal Retur</Text>
-            <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-              <Text style={{ fontSize: 14, color: COLORS.textPrimary }}>
-                {format(formDate, 'd MMMM yyyy', { locale: idLocale })}
-              </Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={formDate}
-                mode="date"
-                maximumDate={new Date()}
-                onChange={(_, date) => { setShowDatePicker(false); if (date) setFormDate(date); }}
-              />
-            )}
+            <DatePickerField
+              label="Tanggal Retur"
+              value={formDate}
+              onChange={setFormDate}
+            />
 
             {/* Platform */}
             <Text style={styles.inputLabel}>Platform</Text>

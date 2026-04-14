@@ -10,8 +10,8 @@ import {
   View,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
 import { readFileAsString } from '../utils/fileReader';
+import { downloadFile } from '../utils/fileUtils';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
@@ -187,9 +187,7 @@ export default function ImportScreen() {
 
   const handleDownloadTemplate = async () => {
     const template = generateOfflineTemplate();
-    const path = FileSystem.documentDirectory + 'template_offline.csv';
-    await FileSystem.writeAsStringAsync(path, template, { encoding: 'utf8' });
-    await Share.share({ url: path, title: 'Template CSV Offline' });
+    await downloadFile(template, 'template_offline.csv', 'text/csv');
   };
 
   return (
