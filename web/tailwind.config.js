@@ -4,15 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#05060a',
-        ember: '#ff5b2e',
-        plasma: '#22d3ee',
-        neon: '#b6ff2e',
-        amber: '#ffc857',
+        ink: '#000000',
+        bg: '#0a0a0c',
+        surface: '#131316',
+        hairline: 'rgba(255,255,255,0.08)',
+        line: 'rgba(255,255,255,0.14)',
+        text: '#f5f5f7',
+        muted: 'rgba(245,245,247,0.60)',
+        dim: 'rgba(245,245,247,0.40)',
+        tron: '#7dd3fc',
+        grid: '#0ea5e9',
+        accent: '#0a84ff',
       },
       fontFamily: {
-        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        display: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"SF Mono"', 'ui-monospace', 'monospace'],
+      },
+      letterSpacing: {
+        tightest: '-0.04em',
       },
     },
   },

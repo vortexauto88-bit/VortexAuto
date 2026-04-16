@@ -15,7 +15,7 @@ const Contact = lazy(() => import('./routes/Contact'));
 export default function App() {
   useCursorGlow();
   return (
-    <div className="relative min-h-screen noise grid-overlay">
+    <div className="relative min-h-screen aura grid-lines">
       <BackgroundCanvas />
       <Nav />
       <ScrollToTop />
@@ -40,8 +40,8 @@ export default function App() {
 function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="font-mono text-xs tracking-[0.3em] text-white/50 animate-pulse">
-        LOADING 4D ·········
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted animate-pulse">
+        LOADING
       </div>
     </div>
   );
@@ -51,10 +51,10 @@ function NotFound() {
   return (
     <section className="min-h-screen flex items-center justify-center text-center px-6">
       <div>
-        <div className="font-mono text-xs tracking-[0.3em] text-ember">// 404</div>
-        <h1 className="text-5xl md:text-7xl font-semibold mt-3">Dimensi tidak ditemukan.</h1>
-        <p className="text-white/60 mt-3">Halaman ini tersesat di ruang 4D.</p>
-        <a href="/" className="mt-6 inline-block btn-primary rounded-xl px-5 py-3 text-sm font-semibold">Kembali ke Home</a>
+        <div className="font-mono text-[11px] tracking-[0.3em] text-tron">404</div>
+        <h1 className="display text-5xl md:text-7xl mt-4">Page not found.</h1>
+        <p className="text-muted mt-3">The page you are looking for does not exist.</p>
+        <a href="/" className="mt-8 inline-block btn-primary rounded-full px-6 py-3 text-sm">Back home</a>
       </div>
     </section>
   );

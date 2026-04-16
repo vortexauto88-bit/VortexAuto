@@ -1,10 +1,8 @@
 import { Canvas } from '@react-three/fiber';
-import { EffectComposer, Bloom, ChromaticAberration, Vignette, Noise } from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import { Tesseract } from './Tesseract';
 import { PartsField } from './PartsField';
 import { NebulaBackground } from '../shaders/NebulaBackground';
-import { Vector2 } from 'three';
 import { useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -20,7 +18,8 @@ function useIsMobile() {
 }
 
 /**
- * Global 3D backdrop that persists across routes. Scene morphs per-route.
+ * Global 3D backdrop. Apple-clean + Tron:
+ * pure black canvas, monochrome wireframes, single cyan accent, soft bloom.
  */
 export function BackgroundCanvas() {
   const { pathname } = useLocation();
@@ -32,8 +31,8 @@ export function BackgroundCanvas() {
     return 'hero';
   }, [pathname]);
 
-  const partsCount = isMobile ? 14 : 34;
-  const signalCount = isMobile ? 6 : 14;
+  const partsCount = isMobile ? 12 : 24;
+  const signalCount = isMobile ? 6 : 12;
 
   return (
     <div className="fixed inset-0 -z-10">
@@ -42,34 +41,29 @@ export function BackgroundCanvas() {
         gl={{ antialias: !isMobile, alpha: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 7], fov: 55 }}
       >
-        {/* full-screen shader quad — rendered first, behind everything */}
         <NebulaBackground />
 
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[4, 6, 3]} intensity={1.1} color="#ff9b6f" />
-        <directionalLight position={[-5, -3, -2]} intensity={0.7} color="#22d3ee" />
-        <pointLight position={[0, 0, 3]} intensity={1.2} color="#ffc857" />
+        <ambientLight intensity={0.3} />
+        <pointLight position={[0, 0, 5]} intensity={0.5} color="#7dd3fc" />
 
         {mode === 'hero' && <Tesseract scale={1.35} />}
         {mode === 'parts' && (
           <>
-            <Tesseract scale={0.7} color="#22d3ee" accent="#b6ff2e" />
+            <Tesseract scale={0.7} color="#ffffff" accent="#7dd3fc" />
             <PartsField count={partsCount} />
           </>
         )}
-        {mode === 'wire' && <Tesseract scale={1.1} color="#ffc857" accent="#ff5b2e" />}
+        {mode === 'wire' && <Tesseract scale={1.1} color="#ffffff" accent="#7dd3fc" />}
         {mode === 'signal' && (
           <>
-            <Tesseract scale={0.9} color="#b6ff2e" accent="#22d3ee" />
+            <Tesseract scale={0.9} color="#ffffff" accent="#7dd3fc" />
             <PartsField count={signalCount} />
           </>
         )}
 
         <EffectComposer multisampling={0}>
-          <Bloom intensity={isMobile ? 0.7 : 0.95} luminanceThreshold={0.18} luminanceSmoothing={0.2} mipmapBlur />
-          <ChromaticAberration blendFunction={BlendFunction.NORMAL} offset={new Vector2(0.0008, 0.0012)} radialModulation={false} modulationOffset={0} />
-          <Noise opacity={0.045} />
-          <Vignette eskil={false} offset={0.2} darkness={0.85} />
+          <Bloom intensity={isMobile ? 0.35 : 0.55} luminanceThreshold={0.35} luminanceSmoothing={0.3} mipmapBlur />
+          <Vignette eskil={false} offset={0.25} darkness={0.9} />
         </EffectComposer>
       </Canvas>
     </div>

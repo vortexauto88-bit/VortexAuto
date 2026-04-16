@@ -28,8 +28,8 @@ function project(v: number[], distance = 2.4): [number, number, number] {
 
 export function Tesseract({
   scale = 1,
-  color = '#ff5b2e',
-  accent = '#22d3ee',
+  color = '#ffffff',
+  accent = '#7dd3fc',
 }: {
   scale?: number;
   color?: string;
@@ -112,7 +112,7 @@ export function Tesseract({
           <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
           <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
         </bufferGeometry>
-        <lineBasicMaterial vertexColors transparent opacity={0.9} linewidth={1} />
+        <lineBasicMaterial vertexColors transparent opacity={0.75} linewidth={1} />
       </lineSegments>
       {/* glowing vertex points */}
       <Points vertices4D={vertices4D} colorA={colorA} colorB={colorB} />
@@ -150,7 +150,7 @@ function Points({
         <bufferAttribute attach="attributes-position" count={vertices4D.length} array={positions} itemSize={3} />
         <bufferAttribute attach="attributes-color" count={vertices4D.length} array={colors} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.12} vertexColors sizeAttenuation transparent opacity={0.95} />
+      <pointsMaterial size={0.08} vertexColors sizeAttenuation transparent opacity={0.9} />
     </points>
   );
 }
