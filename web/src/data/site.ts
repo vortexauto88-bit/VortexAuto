@@ -1,8 +1,11 @@
+import { productImages } from './productImages';
+
 export const site = {
   brand: 'YSP Genuine Parts',
   short: 'YSP',
   tagline: 'Suku cadang asli untuk Yamaha & Honda.',
-  subTagline: 'Kampas ganda, kampas rem, dan lini lengkap suku cadang sepeda motor — dibuat presisi, diuji di jalanan Indonesia.',
+  subTagline:
+    'Mangkok Ganda, Rumah Roller, V-Belt, Kampas Ganda — dibuat presisi, diuji di jalanan Indonesia.',
   location: 'Indonesia',
   phone: '+62 812-0000-0000',
   whatsapp: '+62 812-0000-0000',
@@ -20,49 +23,50 @@ export const site = {
 
 export type Motor = 'Yamaha' | 'Honda';
 
-export type Product = {
-  code: string;
-  name: string;        // short name e.g. "Kampas Ganda"
-  model: string;       // e.g. "Jupiter MX"
-  motor: Motor;
-  category: 'kampas-ganda' | 'kampas-rem';
-  /** Optional override. If unset, the site tries /products/{code}.jpg|png|webp */
-  image?: string;
-};
-
-// Real products from the YSP catalog
-export const products: Product[] = [
-  // Kampas Ganda (clutch shoes)
-  { code: '1S7',      name: 'Kampas Ganda', model: 'Jupiter MX', motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '2DP',      name: 'Kampas Ganda', model: 'NMax 155cc', motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '2SX',      name: 'Kampas Ganda', model: 'Mio M3',     motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '5TL',      name: 'Kampas Ganda', model: 'Mio Sporty', motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '5TP',      name: 'Kampas Ganda', model: 'Vega R',     motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '14D',      name: 'Kampas Ganda', model: 'Mio Soul',   motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '44D',      name: 'Kampas Ganda', model: 'Xeon 125',   motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: '54P',      name: 'Kampas Ganda', model: 'Mio J',      motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: 'B65',      name: 'Kampas Ganda', model: 'Aerox 155cc',motor: 'Yamaha', category: 'kampas-ganda' },
-  { code: 'B74',      name: 'Kampas Ganda', model: 'X-Max',      motor: 'Yamaha', category: 'kampas-ganda' },
-  // Honda
-  { code: 'GCC/KVB',  name: 'Kampas Ganda', model: 'Vario 110 CW', motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'K2FA/K1A', name: 'Kampas Ganda', model: 'Scoopy ESP', motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'K16',      name: 'Kampas Ganda', model: 'Scoopy',     motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'K44',      name: 'Kampas Ganda', model: 'Beat Pop',   motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'KPH',      name: 'Kampas Ganda', model: 'Karisma',    motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'KVY',      name: 'Kampas Ganda', model: 'Beat Karbu', motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'KWN',      name: 'Kampas Ganda', model: 'Vario 125',  motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'KWW',      name: 'Kampas Ganda', model: 'New Revo',   motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'KZL',      name: 'Kampas Ganda', model: 'Beat FI',    motor: 'Honda', category: 'kampas-ganda' },
-  { code: 'K81',      name: 'Kampas Ganda', model: 'Beat Esp',   motor: 'Honda', category: 'kampas-ganda' },
-];
+export type CategorySlug =
+  | 'mangkok-ganda'
+  | 'rumah-roller'
+  | 'tutup-rumah-roller'
+  | 'v-belt'
+  | 'v-belt-assy-roller'
+  | 'kampas-ganda'
+  | 'kampas-rem';
 
 export type Category = {
-  slug: 'kampas-ganda' | 'kampas-rem';
-  name: string;
+  slug: CategorySlug;
+  name: string;       // MUST match the prefix used in filenames
   blurb: string;
+  aliases?: string[]; // extra name variants accepted in filenames
 };
 
 export const categories: Category[] = [
+  {
+    slug: 'mangkok-ganda',
+    name: 'Mangkok Ganda',
+    blurb: 'Clutch bell / housing — permukaan presisi, putaran halus.',
+  },
+  {
+    slug: 'rumah-roller',
+    name: 'Rumah Roller',
+    blurb: 'Rumah roller CVT — dimensi OEM, presisi tinggi.',
+  },
+  {
+    slug: 'tutup-rumah-roller',
+    name: 'Tutup Rumah Roller',
+    blurb: 'Cover roller housing — debu & panas terkunci di luar.',
+  },
+  {
+    slug: 'v-belt',
+    name: 'V-Belt',
+    blurb: 'Sabuk CVT tahan panas & tahan aus untuk harian kota.',
+    aliases: ['V Belt'],
+  },
+  {
+    slug: 'v-belt-assy-roller',
+    name: 'V-Belt Assy + Roller',
+    blurb: 'Paket lengkap V-belt plus roller — tinggal pasang.',
+    aliases: ['V Belt Assy + Roller'],
+  },
   {
     slug: 'kampas-ganda',
     name: 'Kampas Ganda',
@@ -75,14 +79,106 @@ export const categories: Category[] = [
   },
 ];
 
+function slugifyCategoryName(name: string): CategorySlug | null {
+  const n = name.toLowerCase().replace(/\s+/g, ' ').trim();
+  for (const c of categories) {
+    if (c.name.toLowerCase() === n) return c.slug;
+    if (c.aliases?.some((a) => a.toLowerCase() === n)) return c.slug;
+  }
+  return null;
+}
+
+/**
+ * Code → motorcycle model & brand. Add new codes here as you photograph
+ * more parts. Unknown codes fall back to "Universal".
+ */
+export const codeMap: Record<string, { motor: Motor; model: string }> = {
+  // Yamaha
+  '1S7':  { motor: 'Yamaha', model: 'Jupiter MX' },
+  '2DP':  { motor: 'Yamaha', model: 'NMax 155cc' },
+  '2SX':  { motor: 'Yamaha', model: 'Mio M3' },
+  '5TL':  { motor: 'Yamaha', model: 'Mio Sporty' },
+  '5TP':  { motor: 'Yamaha', model: 'Vega R' },
+  '14D':  { motor: 'Yamaha', model: 'Mio Soul' },
+  '44D':  { motor: 'Yamaha', model: 'Xeon 125' },
+  '54P':  { motor: 'Yamaha', model: 'Mio J' },
+  'B5X':  { motor: 'Yamaha', model: 'Lexi 125' },
+  'B65':  { motor: 'Yamaha', model: 'Aerox 155cc' },
+  'B74':  { motor: 'Yamaha', model: 'X-Max' },
+  // Honda
+  'GCC/KVB': { motor: 'Honda', model: 'Vario 110 CW' },
+  'GFM':  { motor: 'Honda', model: 'Beat Street' },
+  'K0J':  { motor: 'Honda', model: 'Beat Pop' },
+  'K0JA': { motor: 'Honda', model: 'Beat Pop' },
+  'K2FA/K1A': { motor: 'Honda', model: 'Scoopy ESP' },
+  'K2S':  { motor: 'Honda', model: 'Vario 150' },
+  'K16':  { motor: 'Honda', model: 'Scoopy' },
+  'K16 FCC': { motor: 'Honda', model: 'Scoopy' },
+  'K35':  { motor: 'Honda', model: 'Vario 125 eSP' },
+  'K36':  { motor: 'Honda', model: 'Vario 150 eSP' },
+  'K44':  { motor: 'Honda', model: 'Beat Pop' },
+  'K81':  { motor: 'Honda', model: 'Beat Esp' },
+  'K97':  { motor: 'Honda', model: 'Genio' },
+  'KPH':  { motor: 'Honda', model: 'Karisma' },
+  'KVB':  { motor: 'Honda', model: 'Vario 110 CW' },
+  'KVY':  { motor: 'Honda', model: 'Beat Karbu' },
+  'KWN':  { motor: 'Honda', model: 'Vario 125' },
+  'KWW':  { motor: 'Honda', model: 'New Revo' },
+  'KZL':  { motor: 'Honda', model: 'Beat FI' },
+  'KZR':  { motor: 'Honda', model: 'Beat FI eSP' },
+};
+
+export type Product = {
+  code: string;
+  name: string;        // "Mangkok Ganda"
+  model: string;       // "Jupiter MX"
+  motor: Motor;
+  category: CategorySlug;
+  image?: string;
+};
+
+/**
+ * Auto-built catalog from discovered image files. If an image filename
+ * includes an explicit model (e.g. "Mangkok Ganda (Vario 125) - KWN.png"),
+ * that model wins. Otherwise we look the code up in `codeMap`.
+ */
+export const products: Product[] = productImages
+  .map((img) => {
+    const slug = slugifyCategoryName(img.category);
+    if (!slug) return null;
+    const category = categories.find((c) => c.slug === slug)!;
+    const lookup = codeMap[img.code];
+    const model = img.model ?? lookup?.model ?? 'Universal';
+    const motor: Motor = lookup?.motor ?? 'Honda';
+    return {
+      code: img.code,
+      name: category.name,
+      model,
+      motor,
+      category: slug,
+      image: img.url,
+    } as Product;
+  })
+  .filter((p): p is Product => p !== null)
+  .sort((a, b) => {
+    if (a.category !== b.category) return a.category.localeCompare(b.category);
+    if (a.motor !== b.motor) return a.motor.localeCompare(b.motor);
+    return a.model.localeCompare(b.model);
+  });
+
 export const motors: { name: Motor; count: number }[] = [
   { name: 'Yamaha', count: products.filter((p) => p.motor === 'Yamaha').length },
   { name: 'Honda', count: products.filter((p) => p.motor === 'Honda').length },
 ];
 
+/** Categories that actually have products available right now. */
+export const activeCategories = categories.filter((c) =>
+  products.some((p) => p.category === c.slug)
+);
+
 export const brands = [
-  'YAMAHA', 'HONDA', 'SUZUKI', 'KAWASAKI',
-  'NMAX', 'AEROX', 'MIO', 'VARIO', 'BEAT', 'SCOOPY', 'JUPITER MX', 'XEON',
+  'YAMAHA', 'HONDA', 'NMAX', 'AEROX', 'MIO', 'VARIO', 'BEAT', 'SCOOPY',
+  'JUPITER MX', 'XEON', 'LEXI', 'X-MAX', 'GENIO',
 ];
 
 export const tiers = [
@@ -91,12 +187,7 @@ export const tiers = [
     scale: '30 Dus',
     price: 'Dihubungi',
     tagline: 'Untuk toko kecil & bengkel aktif.',
-    perks: [
-      'Harga grosir per dus',
-      'Pengiriman reguler',
-      'Minimum 30 dus per order',
-      'Support WhatsApp',
-    ],
+    perks: ['Harga grosir per dus', 'Pengiriman reguler', 'Minimum 30 dus per order', 'Support WhatsApp'],
     highlighted: false,
     cta: 'Saya ingin jadi Grosiran',
   },
@@ -105,12 +196,7 @@ export const tiers = [
     scale: '600 Juta',
     price: 'Mulai Rp 600 jt',
     tagline: 'Jaringan kota & kabupaten.',
-    perks: [
-      'Harga agen resmi YSP',
-      'Eksklusif wilayah tertentu',
-      'Marketing kit + training produk',
-      'Dukungan prioritas',
-    ],
+    perks: ['Harga agen resmi YSP', 'Eksklusif wilayah tertentu', 'Marketing kit + training produk', 'Dukungan prioritas'],
     highlighted: true,
     cta: 'Saya ingin jadi Agen',
   },
@@ -119,12 +205,7 @@ export const tiers = [
     scale: '2 Miliar',
     price: 'Mulai Rp 2 M',
     tagline: 'Skala regional & nasional.',
-    perks: [
-      'Harga distributor terbaik',
-      'Wilayah provinsi',
-      'Joint marketing & co-branding',
-      'Account manager dedicated',
-    ],
+    perks: ['Harga distributor terbaik', 'Wilayah provinsi', 'Joint marketing & co-branding', 'Account manager dedicated'],
     highlighted: false,
     cta: 'Saya ingin jadi Distributor',
   },
@@ -134,12 +215,12 @@ export const featureHighlights = [
   {
     eyebrow: 'PRESISI',
     title: 'Toleransi mikron, bukan milimeter.',
-    body: 'Setiap kampas ganda YSP dicetak dengan toleransi manufaktur yang ketat — kopling engage mulus, tanpa selip, tanpa getar.',
+    body: 'Setiap part YSP dicetak dengan toleransi manufaktur yang ketat — kopling engage mulus, tanpa selip, tanpa getar.',
   },
   {
     eyebrow: 'TAHAN PANAS',
     title: 'Dirancang untuk macet jam 5 sore.',
-    body: 'Compound gesek kami teruji pada suhu tinggi berulang — lebih tahan lama di rute harian kota padat.',
+    body: 'Compound dan material teruji pada suhu tinggi berulang — lebih tahan lama di rute harian kota padat.',
   },
   {
     eyebrow: 'FITMEN',

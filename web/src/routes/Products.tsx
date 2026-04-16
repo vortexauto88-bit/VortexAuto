@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal } from '../components/Reveal';
 import { WordReveal } from '../components/WordReveal';
 import { ProductImage } from '../components/ProductImage';
-import { products, motors, categories, site, Motor } from '../data/site';
+import { products, motors, activeCategories, site, Motor, CategorySlug } from '../data/site';
 
 type MotorFilter = 'all' | Motor;
-type CatFilter = 'all' | 'kampas-ganda' | 'kampas-rem';
+type CatFilter = 'all' | CategorySlug;
 
 export default function Products() {
   const [motor, setMotor] = useState<MotorFilter>('all');
@@ -65,7 +65,7 @@ export default function Products() {
           </FilterSection>
           <FilterSection label="Kategori">
             <Chip active={cat === 'all'} onClick={() => setCat('all')}>Semua</Chip>
-            {categories.map((c) => (
+            {activeCategories.map((c) => (
               <Chip key={c.slug} active={cat === c.slug} onClick={() => setCat(c.slug)}>
                 {c.name}
               </Chip>
@@ -92,8 +92,20 @@ export default function Products() {
             ))}
             {filtered.length === 0 && (
               <div className="col-span-full text-center py-24 text-muted">
-                Tidak ada part cocok. Coba cari dengan kata lain atau{' '}
-                <a href={`https://wa.me/${site.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="link-tron">chat kami langsung</a>.
+                {products.length === 0 ? (
+                  <div className="max-w-lg mx-auto space-y-3">
+                    <div className="text-[11px] font-mono tracking-[0.25em] text-tron">KATALOG KOSONG</div>
+                    <p>
+                      Belum ada foto produk di <code className="font-mono text-text">web/src/assets/products/</code>.
+                      Copy file foto kamu ke folder itu, format nama <code className="font-mono text-text">Kategori (Kode).png</code>,
+                      lalu reload.
+                    </p>
+                  </div>
+                ) : (
+                  <>Tidak ada part cocok. Coba cari dengan kata lain atau{' '}
+                    <a href={`https://wa.me/${site.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="link-tron">chat kami langsung</a>.
+                  </>
+                )}
               </div>
             )}
           </motion.div>
