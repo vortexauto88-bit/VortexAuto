@@ -5,9 +5,10 @@ import { site } from '../data/site';
 
 const links = [
   { to: '/', label: 'Home' },
-  { to: '/products', label: 'Products' },
-  { to: '/about', label: 'About' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/products', label: 'Katalog' },
+  { to: '/partnership', label: 'Kemitraan' },
+  { to: '/about', label: 'Tentang' },
+  { to: '/contact', label: 'Kontak' },
 ];
 
 export function Nav() {

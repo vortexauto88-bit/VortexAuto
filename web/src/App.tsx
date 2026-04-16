@@ -9,6 +9,7 @@ import { useCursorGlow } from './hooks/useCursorGlow';
 
 const Home = lazy(() => import('./routes/Home'));
 const Products = lazy(() => import('./routes/Products'));
+const Partnership = lazy(() => import('./routes/Partnership'));
 const About = lazy(() => import('./routes/About'));
 const Contact = lazy(() => import('./routes/Contact'));
 
@@ -25,6 +26,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/partnership" element={<Partnership />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />

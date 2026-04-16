@@ -1,8 +1,8 @@
 export const site = {
-  brand: 'YSP Motorindo Parts',
+  brand: 'YSP Genuine Parts',
   short: 'YSP',
-  tagline: 'Suku Cadang dalam 4 Dimensi',
-  subTagline: 'Presisi. Kecepatan. Kepercayaan — untuk setiap mesin yang kamu rawat.',
+  tagline: 'Suku cadang asli untuk Yamaha & Honda.',
+  subTagline: 'Kampas ganda, kampas rem, dan lini lengkap suku cadang sepeda motor — dibuat presisi, diuji di jalanan Indonesia.',
   location: 'Indonesia',
   phone: '+62 812-0000-0000',
   whatsapp: '+62 812-0000-0000',
@@ -13,88 +13,141 @@ export const site = {
   stats: [
     { k: '12K+', v: 'SKU tersedia' },
     { k: '48 jam', v: 'kirim nasional' },
-    { k: '9+ thn', v: 'pengalaman' },
-    { k: '4.9/5', v: 'rating pelanggan' },
+    { k: '9+ thn', v: 'di jalanan' },
+    { k: '300+', v: 'bengkel mitra' },
   ],
 };
 
+export type Motor = 'Yamaha' | 'Honda';
+
+export type Product = {
+  code: string;
+  name: string;        // short name e.g. "Kampas Ganda"
+  model: string;       // e.g. "Jupiter MX"
+  motor: Motor;
+  category: 'kampas-ganda' | 'kampas-rem';
+};
+
+// Real products from the YSP catalog
+export const products: Product[] = [
+  // Kampas Ganda (clutch shoes)
+  { code: '1S7',      name: 'Kampas Ganda', model: 'Jupiter MX', motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '2DP',      name: 'Kampas Ganda', model: 'NMax 155cc', motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '2SX',      name: 'Kampas Ganda', model: 'Mio M3',     motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '5TL',      name: 'Kampas Ganda', model: 'Mio Sporty', motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '5TP',      name: 'Kampas Ganda', model: 'Vega R',     motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '14D',      name: 'Kampas Ganda', model: 'Mio Soul',   motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '44D',      name: 'Kampas Ganda', model: 'Xeon 125',   motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: '54P',      name: 'Kampas Ganda', model: 'Mio J',      motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: 'B65',      name: 'Kampas Ganda', model: 'Aerox 155cc',motor: 'Yamaha', category: 'kampas-ganda' },
+  { code: 'B74',      name: 'Kampas Ganda', model: 'X-Max',      motor: 'Yamaha', category: 'kampas-ganda' },
+  // Honda
+  { code: 'GCC/KVB',  name: 'Kampas Ganda', model: 'Vario 110 CW', motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'K2FA/K1A', name: 'Kampas Ganda', model: 'Scoopy ESP', motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'K16',      name: 'Kampas Ganda', model: 'Scoopy',     motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'K44',      name: 'Kampas Ganda', model: 'Beat Pop',   motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'KPH',      name: 'Kampas Ganda', model: 'Karisma',    motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'KVY',      name: 'Kampas Ganda', model: 'Beat Karbu', motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'KWN',      name: 'Kampas Ganda', model: 'Vario 125',  motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'KWW',      name: 'Kampas Ganda', model: 'New Revo',   motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'KZL',      name: 'Kampas Ganda', model: 'Beat FI',    motor: 'Honda', category: 'kampas-ganda' },
+  { code: 'K81',      name: 'Kampas Ganda', model: 'Beat Esp',   motor: 'Honda', category: 'kampas-ganda' },
+];
+
 export type Category = {
-  slug: string;
+  slug: 'kampas-ganda' | 'kampas-rem';
   name: string;
   blurb: string;
-  accent: string; // tailwind color hint
-  icon: string;
-  items: string[];
 };
 
 export const categories: Category[] = [
   {
-    slug: 'engine',
-    name: 'Engine & Power',
-    blurb: 'Jantung mesin — piston, ring, klep, sampai head assembly.',
-    accent: '#ff5b2e',
-    icon: '⚙',
-    items: ['Piston Kit', 'Klep / Valve', 'Gasket Set', 'Camshaft', 'Crankshaft Bearing'],
+    slug: 'kampas-ganda',
+    name: 'Kampas Ganda',
+    blurb: 'Auto-clutch shoes — transfer tenaga halus, pakem, tahan panas.',
   },
   {
-    slug: 'drivetrain',
-    name: 'Drivetrain',
-    blurb: 'Tenaga yang tersalur sempurna dari mesin ke roda.',
-    accent: '#22d3ee',
-    icon: '◎',
-    items: ['V-Belt CVT', 'Roller', 'Kampas Ganda', 'Rantai & Gear Set', 'Kopling Assembly'],
-  },
-  {
-    slug: 'brakes',
-    name: 'Brakes & Safety',
-    blurb: 'Berhenti yang yakin. Pakem di semua kondisi.',
-    accent: '#ffc857',
-    icon: '⏹',
-    items: ['Kampas Rem', 'Disc Rotor', 'Master Rem', 'Minyak Rem DOT4', 'Kabel Rem'],
-  },
-  {
-    slug: 'suspension',
-    name: 'Suspension',
-    blurb: 'Redam guncangan, kuasai jalan.',
-    accent: '#b6ff2e',
-    icon: '≈',
-    items: ['Shockbreaker', 'Seal Shock', 'Per Shock', 'Comstir', 'Bushing Arm'],
-  },
-  {
-    slug: 'electrical',
-    name: 'Electrical',
-    blurb: 'Arus yang stabil, pengapian yang konsisten.',
-    accent: '#8b5cf6',
-    icon: '⚡',
-    items: ['Aki / Battery', 'CDI / ECU', 'Spul Magnet', 'Coil Pengapian', 'Busi Iridium'],
-  },
-  {
-    slug: 'body',
-    name: 'Body & Trim',
-    blurb: 'Tampilan yang tajam. Detail yang rapi.',
-    accent: '#f472b6',
-    icon: '◇',
-    items: ['Body Cover', 'Spion', 'Cover Lampu', 'Stiker & Emblem', 'Jok'],
+    slug: 'kampas-rem',
+    name: 'Kampas Rem',
+    blurb: 'Brake shoes & pads — hentinya yakin, aus-nya merata.',
   },
 ];
 
-export const featured = [
-  { name: 'Piston Racing Hi-Comp 58.5mm', cat: 'Engine', price: 'Rp 485.000', tag: 'HOT' },
-  { name: 'V-Belt CVT Kevlar Reinforced', cat: 'Drivetrain', price: 'Rp 215.000', tag: 'BARU' },
-  { name: 'Kampas Rem Sinter Premium', cat: 'Brakes', price: 'Rp 145.000', tag: 'STOK' },
-  { name: 'Shockbreaker Gas Tabung Adjustable', cat: 'Suspension', price: 'Rp 1.290.000', tag: 'HOT' },
-  { name: 'Busi Iridium IX', cat: 'Electrical', price: 'Rp 125.000', tag: 'STOK' },
-  { name: 'Gasket Set Full Overhaul', cat: 'Engine', price: 'Rp 320.000', tag: 'BARU' },
+export const motors: { name: Motor; count: number }[] = [
+  { name: 'Yamaha', count: products.filter((p) => p.motor === 'Yamaha').length },
+  { name: 'Honda', count: products.filter((p) => p.motor === 'Honda').length },
 ];
 
 export const brands = [
-  'HONDA', 'YAMAHA', 'SUZUKI', 'KAWASAKI', 'VESPA', 'BAJAJ',
-  'DAIHATSU', 'TOYOTA', 'MITSUBISHI', 'ISUZU', 'NGK', 'FEDERAL',
-  'DENSO', 'AISIN', 'KAYABA', 'SHOWA', 'BRT', 'IRC',
+  'YAMAHA', 'HONDA', 'SUZUKI', 'KAWASAKI',
+  'NMAX', 'AEROX', 'MIO', 'VARIO', 'BEAT', 'SCOOPY', 'JUPITER MX', 'XEON',
+];
+
+export const tiers = [
+  {
+    name: 'Grosiran',
+    scale: '30 Dus',
+    price: 'Dihubungi',
+    tagline: 'Untuk toko kecil & bengkel aktif.',
+    perks: [
+      'Harga grosir per dus',
+      'Pengiriman reguler',
+      'Minimum 30 dus per order',
+      'Support WhatsApp',
+    ],
+    highlighted: false,
+    cta: 'Saya ingin jadi Grosiran',
+  },
+  {
+    name: 'Agen',
+    scale: '600 Juta',
+    price: 'Mulai Rp 600 jt',
+    tagline: 'Jaringan kota & kabupaten.',
+    perks: [
+      'Harga agen resmi YSP',
+      'Eksklusif wilayah tertentu',
+      'Marketing kit + training produk',
+      'Dukungan prioritas',
+    ],
+    highlighted: true,
+    cta: 'Saya ingin jadi Agen',
+  },
+  {
+    name: 'Distributor',
+    scale: '2 Miliar',
+    price: 'Mulai Rp 2 M',
+    tagline: 'Skala regional & nasional.',
+    perks: [
+      'Harga distributor terbaik',
+      'Wilayah provinsi',
+      'Joint marketing & co-branding',
+      'Account manager dedicated',
+    ],
+    highlighted: false,
+    cta: 'Saya ingin jadi Distributor',
+  },
+];
+
+export const featureHighlights = [
+  {
+    eyebrow: 'PRESISI',
+    title: 'Toleransi mikron, bukan milimeter.',
+    body: 'Setiap kampas ganda YSP dicetak dengan toleransi manufaktur yang ketat — kopling engage mulus, tanpa selip, tanpa getar.',
+  },
+  {
+    eyebrow: 'TAHAN PANAS',
+    title: 'Dirancang untuk macet jam 5 sore.',
+    body: 'Compound gesek kami teruji pada suhu tinggi berulang — lebih tahan lama di rute harian kota padat.',
+  },
+  {
+    eyebrow: 'FITMEN',
+    title: 'Pasang langsung. Tanpa otak-atik.',
+    body: 'Dimensi disesuaikan OEM. Tidak perlu grinding, tidak perlu adjustment tambahan — mekanik bengkel puas.',
+  },
 ];
 
 export const testimonials = [
-  { who: 'Bengkel Rajawali', say: 'Stok lengkap, harga jelas. Kirim Jakarta–Bandung cuma sehari.' },
-  { who: 'Adit — rider harian', say: 'Pesan malam, besok pagi nyampe. Part original, bukan KW.' },
-  { who: 'PT. Logistik Nusantara', say: 'Mitra suku cadang armada kami selama 3 tahun. Tanpa drama.' },
+  { who: 'Bengkel Rajawali — Jakarta', say: 'Stok lengkap, harga jelas. Kirim Jakarta–Bandung cuma sehari.' },
+  { who: 'Adit — rider harian Nmax', say: 'Pasang kampas ganda YSP, akselerasi balik enteng. Worth it.' },
+  { who: 'PT. Logistik Nusantara', say: 'Mitra suku cadang armada Mio kami selama 3 tahun. Tanpa drama.' },
 ];

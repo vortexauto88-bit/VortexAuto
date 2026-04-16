@@ -1,29 +1,23 @@
 {
-  "name": "ysp-motorindo-4d",
+  "name": "ysp-motorindo-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "YSP Motorindo Parts — 4D immersive spare parts experience",
+  "description": "YSP Genuine Parts — interactive, Apple-style website",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host"
   },
   "dependencies": {
-    "@react-three/drei": "^9.114.0",
-    "@react-three/fiber": "^8.17.10",
-    "@react-three/postprocessing": "^2.16.3",
     "framer-motion": "^11.11.1",
-    "postprocessing": "^6.36.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.27.0",
-    "three": "^0.169.0"
+    "react-router-dom": "^6.27.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
-    "@types/three": "^0.169.0",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",

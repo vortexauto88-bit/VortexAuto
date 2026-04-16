@@ -13,9 +13,10 @@ export function Footer() {
           <div className="text-[11px] uppercase tracking-[0.18em] text-dim mb-4">Menu</div>
           <ul className="space-y-2 text-sm text-muted">
             <li><Link className="hover:text-text transition" to="/">Home</Link></li>
-            <li><Link className="hover:text-text transition" to="/products">Products</Link></li>
-            <li><Link className="hover:text-text transition" to="/about">About</Link></li>
-            <li><Link className="hover:text-text transition" to="/contact">Contact</Link></li>
+            <li><Link className="hover:text-text transition" to="/products">Katalog</Link></li>
+            <li><Link className="hover:text-text transition" to="/partnership">Kemitraan</Link></li>
+            <li><Link className="hover:text-text transition" to="/about">Tentang</Link></li>
+            <li><Link className="hover:text-text transition" to="/contact">Kontak</Link></li>
           </ul>
         </div>
         <div>
