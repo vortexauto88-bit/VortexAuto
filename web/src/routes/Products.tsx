@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal } from '../components/Reveal';
 import { WordReveal } from '../components/WordReveal';
-import { ClutchSpider, BrakeShoe } from '../components/PartVisual';
+import { ProductImage } from '../components/ProductImage';
 import { products, motors, categories, site, Motor } from '../data/site';
 
 type MotorFilter = 'all' | Motor;
@@ -151,14 +151,11 @@ function ProductCard({
       </div>
 
       {/* Art — scales on hover */}
-      <div className="relative aspect-[4/3] my-4 flex items-center justify-center">
-        <div className="absolute inset-0 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-          {product.category === 'kampas-ganda' ? (
-            <ClutchSpider className="w-[80%] h-[80%]" />
-          ) : (
-            <BrakeShoe className="w-[90%] h-[90%]" />
-          )}
-        </div>
+      <div className="relative aspect-[4/3] my-4 overflow-hidden rounded-xl">
+        <ProductImage
+          product={product}
+          className="absolute inset-0 p-3 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
+        />
       </div>
 
       <div>

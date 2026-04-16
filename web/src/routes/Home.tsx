@@ -3,7 +3,8 @@ import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-
 import { useRef } from 'react';
 import { Reveal } from '../components/Reveal';
 import { WordReveal } from '../components/WordReveal';
-import { ClutchSpider, BrakeShoe } from '../components/PartVisual';
+import { ClutchSpider } from '../components/PartVisual';
+import { ProductImage } from '../components/ProductImage';
 import { useMagnetic } from '../hooks/useMagnetic';
 import { site, brands, products, featureHighlights, tiers, testimonials } from '../data/site';
 
@@ -272,13 +273,10 @@ function BentoCard({ product, large }: { product: typeof products[number]; large
       </div>
 
       {/* Art */}
-      <div className={`absolute ${large ? 'right-[-10%] bottom-[-15%] w-[70%]' : 'right-[-15%] bottom-[-25%] w-[85%]'} opacity-70 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12`}>
-        {product.category === 'kampas-ganda' ? (
-          <ClutchSpider className="w-full h-full" />
-        ) : (
-          <BrakeShoe className="w-full h-full" />
-        )}
-      </div>
+      <ProductImage
+        product={product}
+        className={`absolute ${large ? 'right-[-10%] bottom-[-15%] w-[70%] aspect-square' : 'right-[-15%] bottom-[-25%] w-[85%] aspect-square'} opacity-80 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-6`}
+      />
 
       <div className="relative z-10">
         <div className="text-[11px] text-dim">{product.name}</div>

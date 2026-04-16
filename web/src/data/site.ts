@@ -26,6 +26,8 @@ export type Product = {
   model: string;       // e.g. "Jupiter MX"
   motor: Motor;
   category: 'kampas-ganda' | 'kampas-rem';
+  /** Optional override. If unset, the site tries /products/{code}.jpg|png|webp */
+  image?: string;
 };
 
 // Real products from the YSP catalog
